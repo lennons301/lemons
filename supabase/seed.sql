@@ -1,9 +1,11 @@
 -- Seed data for local development
--- Run after migration. Uses Supabase Auth admin API to create test users.
--- Test users are created via the Supabase dashboard or supabase/config.toml seed.
-
--- This file seeds data AFTER test users exist.
--- For local dev, create test users via the Auth UI at http://127.0.0.1:54323
--- then run: psql -f supabase/seed.sql
-
--- Placeholder: will be populated once auth is working and we have test user IDs.
+-- =================================
+--
+-- Workflow:
+-- 1. Run `npx supabase db reset` to apply migrations and this seed file
+-- 2. Create test users via the Supabase Auth UI at http://127.0.0.1:54323
+--    or via the signup flow at http://localhost:3000/signup
+-- 3. The on_auth_user_created trigger will auto-create profile rows
+--
+-- Once test users exist, you can add household seed data here using their IDs.
+-- For now, all data is created through the app's UI during development.
