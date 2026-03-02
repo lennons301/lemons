@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUserHouseholds } from '@/lib/supabase/queries'
 import { HouseholdProvider } from '@/components/providers/household-provider'
+import { Sidebar } from '@/components/features/sidebar'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -34,6 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       defaultHouseholdId={profile?.default_household_id ?? null}
     >
       <div className="flex min-h-screen">
+        <Sidebar />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </HouseholdProvider>
