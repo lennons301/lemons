@@ -86,6 +86,22 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ============================================================
+-- HELPERS: security definer functions to get current user's household IDs
+-- without triggering RLS on household_members (avoids infinite recursion)
+-- ============================================================
+create or replace function public.get_my_household_ids()
+returns setof uuid as $$
+  select household_id from public.household_members
+  where profile_id = auth.uid()
+$$ language sql security definer stable;
+
+create or replace function public.get_my_admin_household_ids()
+returns setof uuid as $$
+  select household_id from public.household_members
+  where profile_id = auth.uid() and role = 'admin'
+$$ language sql security definer stable;
+
+-- ============================================================
 -- ROW LEVEL SECURITY (all tables exist now, safe to reference)
 -- ============================================================
 
@@ -106,7 +122,8 @@ alter table public.households enable row level security;
 create policy "Members can view their households"
   on public.households for select
   using (
-    id in (
+    created_by = auth.uid()
+    or id in (
       select household_id from public.household_members
       where profile_id = auth.uid()
     )
@@ -119,10 +136,7 @@ create policy "Authenticated users can create households"
 create policy "Admins can update their households"
   on public.households for update
   using (
-    id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid() and role = 'admin'
-    )
+    id in (select public.get_my_admin_household_ids())
   );
 
 -- Household Members RLS
@@ -130,39 +144,25 @@ alter table public.household_members enable row level security;
 
 create policy "Members can view co-members"
   on public.household_members for select
-  using (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid()
-    )
-  );
+  using (household_id in (select public.get_my_household_ids()));
 
 create policy "Admins can insert members"
   on public.household_members for insert
   with check (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid() and role = 'admin'
-    )
-    or profile_id = auth.uid() -- users can add themselves (for household creation)
+    profile_id = auth.uid() -- users can add themselves (for household creation)
+    or household_id in (select public.get_my_admin_household_ids())
   );
 
 create policy "Admins can update members"
   on public.household_members for update
   using (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid() and role = 'admin'
-    )
+    household_id in (select public.get_my_admin_household_ids())
   );
 
 create policy "Admins can remove members"
   on public.household_members for delete
   using (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid() and role = 'admin'
-    )
+    household_id in (select public.get_my_admin_household_ids())
     or profile_id = auth.uid() -- users can leave
   );
 
@@ -171,24 +171,14 @@ alter table public.household_managed_members enable row level security;
 
 create policy "household_isolation"
   on public.household_managed_members for all
-  using (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid()
-    )
-  );
+  using (household_id in (select public.get_my_household_ids()));
 
 -- Household Invites RLS
 alter table public.household_invites enable row level security;
 
 create policy "Admins can manage invites"
   on public.household_invites for all
-  using (
-    household_id in (
-      select household_id from public.household_members
-      where profile_id = auth.uid() and role = 'admin'
-    )
-  );
+  using (household_id in (select public.get_my_admin_household_ids()));
 
 create policy "Anyone can read invites by code"
   on public.household_invites for select
