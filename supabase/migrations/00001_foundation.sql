@@ -1,10 +1,11 @@
--- Enable UUID generation
-create extension if not exists "uuid-ossp";
+-- gen_random_uuid() is built into Postgres 13+ (no extension needed)
 
 -- ============================================================
--- PROFILES (auto-created from Supabase Auth via trigger)
+-- TABLES (created first, policies added after all tables exist)
 -- ============================================================
-create table public.profiles (
+
+-- PROFILES (auto-created from Supabase Auth via trigger)
+create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   display_name text,
@@ -14,17 +15,58 @@ create table public.profiles (
   created_at timestamptz default now() not null
 );
 
-alter table public.profiles enable row level security;
+-- HOUSEHOLDS
+create table if not exists public.households (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_by uuid not null references public.profiles(id),
+  created_at timestamptz default now() not null
+);
 
-create policy "Users can read own profile"
-  on public.profiles for select
-  using (id = auth.uid());
+-- HOUSEHOLD MEMBERS
+create table if not exists public.household_members (
+  id uuid primary key default gen_random_uuid(),
+  household_id uuid not null references public.households(id) on delete cascade,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  role text not null default 'member' check (role in ('admin', 'member')),
+  display_name text,
+  joined_at timestamptz default now() not null,
+  invited_by uuid references public.profiles(id),
+  unique(household_id, profile_id)
+);
 
-create policy "Users can update own profile"
-  on public.profiles for update
-  using (id = auth.uid());
+-- HOUSEHOLD MANAGED MEMBERS (non-user members like children)
+create table if not exists public.household_managed_members (
+  id uuid primary key default gen_random_uuid(),
+  household_id uuid not null references public.households(id) on delete cascade,
+  display_name text not null,
+  avatar_url text,
+  created_by uuid not null references public.profiles(id),
+  linked_profile_id uuid references public.profiles(id)
+);
 
--- Trigger: auto-create profile on signup
+-- HOUSEHOLD INVITES
+create table if not exists public.household_invites (
+  id uuid primary key default gen_random_uuid(),
+  household_id uuid not null references public.households(id) on delete cascade,
+  email text,
+  invite_code text not null unique,
+  role text not null default 'member' check (role in ('admin', 'member')),
+  expires_at timestamptz not null default (now() + interval '7 days'),
+  accepted_at timestamptz,
+  created_by uuid not null references public.profiles(id)
+);
+
+-- ============================================================
+-- DEFERRED FOREIGN KEYS
+-- ============================================================
+alter table public.profiles
+  add constraint profiles_default_household_fk
+  foreign key (default_household_id) references public.households(id) on delete set null;
+
+-- ============================================================
+-- TRIGGER: auto-create profile on signup
+-- ============================================================
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -38,20 +80,27 @@ begin
 end;
 $$ language plpgsql security definer;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
 -- ============================================================
--- HOUSEHOLDS
+-- ROW LEVEL SECURITY (all tables exist now, safe to reference)
 -- ============================================================
-create table public.households (
-  id uuid primary key default uuid_generate_v4(),
-  name text not null,
-  created_by uuid not null references public.profiles(id),
-  created_at timestamptz default now() not null
-);
 
+-- Profiles RLS
+alter table public.profiles enable row level security;
+
+create policy "Users can read own profile"
+  on public.profiles for select
+  using (id = auth.uid());
+
+create policy "Users can update own profile"
+  on public.profiles for update
+  using (id = auth.uid());
+
+-- Households RLS
 alter table public.households enable row level security;
 
 create policy "Members can view their households"
@@ -76,20 +125,7 @@ create policy "Admins can update their households"
     )
   );
 
--- ============================================================
--- HOUSEHOLD MEMBERS
--- ============================================================
-create table public.household_members (
-  id uuid primary key default uuid_generate_v4(),
-  household_id uuid not null references public.households(id) on delete cascade,
-  profile_id uuid not null references public.profiles(id) on delete cascade,
-  role text not null default 'member' check (role in ('admin', 'member')),
-  display_name text,
-  joined_at timestamptz default now() not null,
-  invited_by uuid references public.profiles(id),
-  unique(household_id, profile_id)
-);
-
+-- Household Members RLS
 alter table public.household_members enable row level security;
 
 create policy "Members can view co-members"
@@ -130,18 +166,7 @@ create policy "Admins can remove members"
     or profile_id = auth.uid() -- users can leave
   );
 
--- ============================================================
--- HOUSEHOLD MANAGED MEMBERS (non-user members like children)
--- ============================================================
-create table public.household_managed_members (
-  id uuid primary key default uuid_generate_v4(),
-  household_id uuid not null references public.households(id) on delete cascade,
-  display_name text not null,
-  avatar_url text,
-  created_by uuid not null references public.profiles(id),
-  linked_profile_id uuid references public.profiles(id)
-);
-
+-- Household Managed Members RLS
 alter table public.household_managed_members enable row level security;
 
 create policy "household_isolation"
@@ -153,20 +178,7 @@ create policy "household_isolation"
     )
   );
 
--- ============================================================
--- HOUSEHOLD INVITES
--- ============================================================
-create table public.household_invites (
-  id uuid primary key default uuid_generate_v4(),
-  household_id uuid not null references public.households(id) on delete cascade,
-  email text,
-  invite_code text not null unique,
-  role text not null default 'member' check (role in ('admin', 'member')),
-  expires_at timestamptz not null default (now() + interval '7 days'),
-  accepted_at timestamptz,
-  created_by uuid not null references public.profiles(id)
-);
-
+-- Household Invites RLS
 alter table public.household_invites enable row level security;
 
 create policy "Admins can manage invites"
@@ -178,14 +190,6 @@ create policy "Admins can manage invites"
     )
   );
 
--- Public read for invite acceptance (by invite code)
 create policy "Anyone can read invites by code"
   on public.household_invites for select
   using (true);
-
--- ============================================================
--- Add FK for profiles.default_household_id (deferred because households didn't exist yet)
--- ============================================================
-alter table public.profiles
-  add constraint profiles_default_household_fk
-  foreign key (default_household_id) references public.households(id) on delete set null;
