@@ -72,7 +72,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-2">
         <Link href="/recipes">
           <Button variant="ghost" size="sm">

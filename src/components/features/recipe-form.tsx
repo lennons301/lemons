@@ -160,7 +160,7 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
+    <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-2">
         <Link href={isEditing ? `/recipes/${initialData.id}` : '/recipes'}>
           <Button variant="ghost" size="sm" type="button">
@@ -232,7 +232,7 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
               placeholder="A brief description of the dish"
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="servings">Servings</Label>
               <Input
