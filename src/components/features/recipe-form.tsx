@@ -51,6 +51,7 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [sourceFiles, setSourceFiles] = useState<File[]>([])
   const [hint, setHint] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,6 +91,22 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
 
     if (res.ok) {
       const recipe = await res.json()
+
+      // Upload source images if we have them from extraction
+      if (sourceFiles.length > 0) {
+        const uploadPromises = sourceFiles.map(async (file) => {
+          const formData = new FormData()
+          formData.append('image', file)
+          formData.append('type', 'source')
+          return fetch(`/api/recipes/${recipe.id}/images`, {
+            method: 'POST',
+            body: formData,
+          })
+        })
+        // Fire and forget — don't block navigation for source image uploads
+        Promise.all(uploadPromises).catch(console.error)
+      }
+
       router.push(`/recipes/${recipe.id}`)
       router.refresh()
     } else {
@@ -156,6 +173,9 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
         )
       }
       if (result.tags?.length) setTags(result.tags)
+
+      // Save source files for upload after recipe creation
+      setSourceFiles([...selectedFiles])
     } catch (err: any) {
       setError(err.message)
     } finally {
