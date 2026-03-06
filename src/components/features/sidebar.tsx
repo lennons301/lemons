@@ -27,9 +27,9 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-white">
-      <div className="flex h-14 items-center border-b px-4">
-        <Link href="/" className="text-xl font-bold">
+    <aside className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+      <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+        <Link href="/" className="text-xl font-bold text-sidebar-foreground">
           Lemons
         </Link>
       </div>
@@ -48,8 +48,8 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -59,7 +59,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="border-t border-sidebar-border p-3">
         <UserMenu />
       </div>
     </aside>
