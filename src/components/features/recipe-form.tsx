@@ -105,6 +105,7 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
 
     const formData = new FormData()
     formData.append('image', file)
+    formData.append('householdId', householdId)
 
     try {
       const res = await fetch('/api/recipes/extract', {

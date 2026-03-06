@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData()
   const file = formData.get('image') as File | null
+  const householdId = formData.get('householdId') as string | null
 
   if (!file) {
     return NextResponse.json({ error: 'No image provided' }, { status: 400 })
@@ -27,12 +28,25 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Look up household's API key if householdId provided
+  let apiKey: string | undefined
+  if (householdId) {
+    const { data: household } = await supabase
+      .from('households')
+      .select('anthropic_api_key')
+      .eq('id', householdId)
+      .single()
+    if (household?.anthropic_api_key) {
+      apiKey = household.anthropic_api_key
+    }
+  }
+
   // Convert to base64
   const bytes = await file.arrayBuffer()
   const base64 = Buffer.from(bytes).toString('base64')
 
   try {
-    const result = await extractRecipeFromImage(base64, mediaType)
+    const result = await extractRecipeFromImage(base64, mediaType, apiKey)
     return NextResponse.json(result)
   } catch (error: any) {
     console.error('Recipe extraction failed:', error)

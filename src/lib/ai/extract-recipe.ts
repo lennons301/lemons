@@ -85,9 +85,10 @@ Rules:
 
 export async function extractRecipeFromImage(
   imageBase64: string,
-  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+  apiKey?: string
 ): Promise<ExtractionResult> {
-  const client = new Anthropic()
+  const client = new Anthropic(apiKey ? { apiKey } : undefined)
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
