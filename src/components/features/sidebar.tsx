@@ -23,13 +23,13 @@ const navItems = [
   { href: '/shopping', label: 'Shopping', icon: ShoppingCart },
 ]
 
-export function Sidebar() {
+export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+    <div className="flex h-full flex-col">
       <div className="flex h-14 items-center border-b border-sidebar-border px-4">
-        <Link href="/" className="text-xl font-bold text-sidebar-foreground">
+        <Link href="/" className="text-xl font-bold text-sidebar-foreground" onClick={onNavigate}>
           Lemons
         </Link>
       </div>
@@ -45,6 +45,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 isActive
@@ -62,6 +63,14 @@ export function Sidebar() {
       <div className="border-t border-sidebar-border p-3">
         <UserMenu />
       </div>
+    </div>
+  )
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+      <SidebarNav />
     </aside>
   )
 }

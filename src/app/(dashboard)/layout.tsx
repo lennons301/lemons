@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getUserHouseholds } from '@/lib/supabase/queries'
 import { HouseholdProvider } from '@/components/providers/household-provider'
 import { Sidebar } from '@/components/features/sidebar'
+import { MobileHeader } from '@/components/features/mobile-header'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -36,7 +37,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     >
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <div className="flex flex-1 flex-col">
+          <MobileHeader />
+          <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        </div>
       </div>
     </HouseholdProvider>
   )
