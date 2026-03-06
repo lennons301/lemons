@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { MemberList } from '@/components/features/member-list'
 import { InviteLinkGenerator } from '@/components/features/invite-link-generator'
 import { ManagedMemberForm } from '@/components/features/managed-member-form'
+import { ApiKeySettings } from '@/components/features/api-key-settings'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -57,6 +58,8 @@ export default async function SettingsPage() {
       />
 
       {isAdmin && <InviteLinkGenerator householdId={householdId} />}
+
+      {isAdmin && <ApiKeySettings householdId={householdId} />}
     </div>
   )
 }
