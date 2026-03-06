@@ -190,18 +190,21 @@ export type Database = {
       }
       households: {
         Row: {
+          anthropic_api_key: string | null
           created_at: string
           created_by: string
           id: string
           name: string
         }
         Insert: {
+          anthropic_api_key?: string | null
           created_at?: string
           created_by: string
           id?: string
           name: string
         }
         Update: {
+          anthropic_api_key?: string | null
           created_at?: string
           created_by?: string
           id?: string
