@@ -2,11 +2,11 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { extractRecipeFromImage } from './extract-recipe'
+import { extractRecipeFromImages } from './extract-recipe'
 
 // Smoke test — calls the real Claude API. Requires ANTHROPIC_API_KEY env var.
 // Run with: ANTHROPIC_API_KEY=sk-... npx vitest run src/lib/ai/extract-recipe.smoke.test.ts
-describe('extractRecipeFromImage (smoke)', () => {
+describe('extractRecipeFromImages (smoke)', () => {
   it('extracts structured recipe data from a screenshot', async () => {
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
@@ -18,7 +18,7 @@ describe('extractRecipeFromImage (smoke)', () => {
     const imageBuffer = readFileSync(imagePath)
     const base64 = imageBuffer.toString('base64')
 
-    const result = await extractRecipeFromImage(base64, 'image/png', apiKey)
+    const result = await extractRecipeFromImages([{ base64, mediaType: 'image/png' }], apiKey)
 
     // Title
     expect(result.title.toLowerCase()).toContain('banana bread')

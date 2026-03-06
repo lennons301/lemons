@@ -1,5 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk'
 
+export interface ImageInput {
+  base64: string
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+}
+
 export interface ExtractedIngredient {
   raw_text: string
   quantity: number | null
@@ -73,6 +78,8 @@ Return ONLY valid JSON with this exact structure:
   "tags": ["cuisine-type", "dietary-info", "meal-type"]
 }
 
+- If multiple images are provided, they are all part of the same recipe (e.g. different pages, front/back of card). Combine information from all images into a single recipe.
+
 Rules:
 - quantity: numeric value (use decimals for fractions: 1/2 = 0.5). null if unspecified.
 - unit: use standard abbreviations (g, kg, ml, l, tsp, tbsp, cup, oz, lb). null if no unit (e.g. "2 onions").
@@ -83,12 +90,25 @@ Rules:
 - If something is unclear or illegible, make your best guess and note uncertainty in the relevant notes field.
 - prep_time and cook_time in minutes. null if not stated.`
 
-export async function extractRecipeFromImage(
-  imageBase64: string,
-  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
-  apiKey?: string
+export async function extractRecipeFromImages(
+  images: ImageInput[],
+  apiKey?: string,
+  hint?: string
 ): Promise<ExtractionResult> {
   const client = new Anthropic(apiKey ? { apiKey } : undefined)
+
+  const imageBlocks = images.map((img) => ({
+    type: 'image' as const,
+    source: {
+      type: 'base64' as const,
+      media_type: img.mediaType,
+      data: img.base64,
+    },
+  }))
+
+  const promptText = hint
+    ? `User note: ${hint}\n\n${EXTRACTION_PROMPT}`
+    : EXTRACTION_PROMPT
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -97,18 +117,8 @@ export async function extractRecipeFromImage(
       {
         role: 'user',
         content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
-              data: imageBase64,
-            },
-          },
-          {
-            type: 'text',
-            text: EXTRACTION_PROMPT,
-          },
+          ...imageBlocks,
+          { type: 'text', text: promptText },
         ],
       },
     ],
