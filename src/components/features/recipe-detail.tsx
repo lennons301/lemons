@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Edit, Minus, Plus, Trash2, Users } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, ChevronDown, Clock, Edit, Minus, Plus, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -69,6 +71,12 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
     groups.get(group)!.push(ing)
   }
 
+  const heroImage = recipe.recipe_images?.find(
+    (img) => img.type === 'hero' || img.type === 'photo'
+  ) || recipe.recipe_images?.find((img) => img.type !== 'source')
+
+  const sourceImages = recipe.recipe_images?.filter((img) => img.type === 'source') || []
+
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0)
 
   return (
@@ -98,6 +106,19 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
           Delete
         </Button>
       </div>
+
+      {heroImage && (
+        <div className="relative aspect-video overflow-hidden rounded-lg">
+          <Image
+            src={heroImage.url}
+            alt={recipe.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority
+          />
+        </div>
+      )}
 
       <div>
         <h1 className="text-3xl font-bold">{recipe.title}</h1>
@@ -223,6 +244,28 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
             {recipe.source_url}
           </a>
         </p>
+      )}
+
+      {sourceImages.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ChevronDown className="h-4 w-4" />
+            View original source ({sourceImages.length} {sourceImages.length === 1 ? 'image' : 'images'})
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3 space-y-3">
+            {sourceImages.map((img) => (
+              <div key={img.id} className="relative overflow-hidden rounded-lg border">
+                <Image
+                  src={img.url}
+                  alt="Original recipe source"
+                  width={768}
+                  height={1024}
+                  className="w-full object-contain"
+                />
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </div>
   )
