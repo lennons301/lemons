@@ -9,3 +9,22 @@
 --
 -- Once test users exist, you can add household seed data here using their IDs.
 -- For now, all data is created through the app's UI during development.
+
+-- ============================================================
+-- SAMPLE RECIPES (requires a household to exist)
+-- Run after creating a test user + household via the app.
+-- These use a placeholder household_id and profile_id.
+-- Replace with real IDs from your local dev environment.
+-- ============================================================
+--
+-- To use:
+-- 1. Sign up via the app at http://localhost:3000/signup
+-- 2. Create a household via onboarding
+-- 3. Find your profile ID and household ID in Supabase Studio (http://localhost:54323)
+-- 4. Run: psql -h localhost -p 54322 -U postgres -d postgres < supabase/seed-recipes.sql
+-- Or paste in Studio SQL editor after replacing the IDs below.
+--
+-- Example (uncomment and replace IDs):
+-- INSERT INTO recipes (title, description, servings, prep_time, cook_time, instructions, household_id, created_by) VALUES
+-- ('Chicken Tikka Masala', 'Classic British-Indian curry', 4, 20, 35, '["Marinate chicken in yoghurt and spices", "Grill or pan-fry chicken pieces", "Make sauce: fry onions, add tomatoes and cream", "Combine chicken with sauce and simmer"]'::jsonb, 'YOUR_HOUSEHOLD_ID', 'YOUR_PROFILE_ID'),
+-- ('Spaghetti Bolognese', 'Simple family bolognese', 4, 10, 45, '["Fry onion, carrot, and celery", "Brown the mince", "Add tinned tomatoes and herbs", "Simmer for 30 minutes", "Cook spaghetti and serve"]'::jsonb, 'YOUR_HOUSEHOLD_ID', 'YOUR_PROFILE_ID');
