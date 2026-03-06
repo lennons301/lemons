@@ -442,10 +442,11 @@ Production:    Vercel production → production Supabase project
 
 ## Build Order
 
-1. **Foundation:** Project scaffolding, Supabase setup, auth, household management, UI shell
-2. **Recipes:** CRUD, manual entry, AI extraction, tagging, search, scaling
-3. **Meal Planning + Shopping:** Weekly grid, per-person assignment, shopping list generation
-4. **Inventory:** Manual CRUD, smart deduction, leftover tracking, shopping → inventory
-5. **Calendar:** Full views, event CRUD, recurrence, meal plan integration, reminders
-6. **Todos:** List CRUD, four types, full task management, event-linked lists
-7. **Polish:** Home dashboard, cross-feature search, v2 LLM meal generation, supermarket API exploration
+1. **Foundation:** Project scaffolding, Supabase setup, auth, household management, UI shell [DONE]
+2. **Recipes:** CRUD, manual entry, AI extraction, tagging, search, scaling [DONE]
+3. **UX Overhaul:** Warm lemon theme, mobile responsive layout (hamburger drawer), multi-image extraction with text hints, recipe image display, source image preservation [IN PROGRESS]
+4. **Meal Planning + Shopping:** Weekly grid, per-person assignment, shopping list generation
+5. **Inventory:** Manual CRUD, smart deduction, leftover tracking, shopping → inventory
+6. **Calendar:** Full views, event CRUD, recurrence, meal plan integration, reminders
+7. **Todos:** List CRUD, four types, full task management, event-linked lists
+8. **Polish:** Home dashboard, cross-feature search, v2 LLM meal generation, supermarket API exploration
