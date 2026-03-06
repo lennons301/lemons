@@ -50,6 +50,8 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
   const [saving, setSaving] = useState(false)
   const [extracting, setExtracting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [hint, setHint] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,14 +99,29 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
     }
   }
 
-  const handleImageExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length + selectedFiles.length > 5) {
+      setError('Maximum 5 images allowed')
+      return
+    }
+    setSelectedFiles((prev) => [...prev, ...files])
+    // Reset input so same file can be re-selected
+    e.target.value = ''
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleExtract = async () => {
+    if (selectedFiles.length === 0) return
     setExtracting(true)
     setError(null)
 
     const formData = new FormData()
-    formData.append('image', file)
+    selectedFiles.forEach((file) => formData.append('images', file))
+    if (hint.trim()) formData.append('hint', hint.trim())
     formData.append('householdId', householdId)
 
     try {
@@ -177,26 +194,69 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
       {!isEditing && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Extract from Image</CardTitle>
+            <CardTitle className="text-base">Extract from Images</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-3 text-sm">
-              Upload a photo of a recipe (cookbook page, screenshot, handwritten) and AI will extract the details.
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Upload photos of a recipe (cookbook pages, screenshots, handwritten cards) and AI will extract the details.
             </p>
-            <div className="flex items-center gap-3">
-              <Input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={handleImageExtract}
+
+            {/* File input */}
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              onChange={handleFilesSelected}
+              disabled={extracting || selectedFiles.length >= 5}
+            />
+
+            {/* Thumbnails */}
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedFiles.map((file, i) => (
+                  <div key={i} className="group relative">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      className="h-20 w-20 rounded-md border object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Hint input */}
+            {selectedFiles.length > 0 && (
+              <div>
+                <Label htmlFor="hint">Instructions for AI (optional)</Label>
+                <Input
+                  id="hint"
+                  value={hint}
+                  onChange={(e) => setHint(e.target.value)}
+                  placeholder='e.g. "Focus on the recipe at the top of the page"'
+                  disabled={extracting}
+                />
+              </div>
+            )}
+
+            {/* Extract button */}
+            {selectedFiles.length > 0 && (
+              <Button
+                type="button"
+                onClick={handleExtract}
                 disabled={extracting}
-              />
-              {extracting && (
-                <span className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Extracting...
-                </span>
-              )}
-            </div>
+              >
+                {extracting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {extracting ? 'Extracting...' : `Extract from ${selectedFiles.length} ${selectedFiles.length === 1 ? 'image' : 'images'}`}
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
