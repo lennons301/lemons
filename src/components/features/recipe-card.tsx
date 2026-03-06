@@ -1,5 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import { Clock, Users } from 'lucide-react'
+import { Clock, Users, UtensilsCrossed } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -18,10 +19,28 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0)
+  const heroImage = recipe.recipe_images?.find(
+    (img) => img.type === 'hero' || img.type === 'photo'
+  ) || recipe.recipe_images?.[0]
 
   return (
     <Link href={`/recipes/${recipe.id}`}>
       <Card className="h-full transition-shadow hover:shadow-md">
+        {heroImage ? (
+          <div className="relative aspect-video overflow-hidden rounded-t-lg">
+            <Image
+              src={heroImage.url}
+              alt={recipe.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-video items-center justify-center rounded-t-lg bg-muted">
+            <UtensilsCrossed className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+        )}
         <CardHeader className="pb-3">
           <CardTitle className="line-clamp-2 text-lg">{recipe.title}</CardTitle>
           {recipe.description && (
