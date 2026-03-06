@@ -14,7 +14,7 @@ export function HouseholdSwitcher() {
 
   if (households.length <= 1) {
     return (
-      <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-medium">
+      <div className="rounded-md bg-muted px-3 py-2 text-sm font-medium">
         {activeHousehold?.name ?? 'No household'}
       </div>
     )

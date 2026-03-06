@@ -23,7 +23,7 @@ export default async function InvitePage({
     return (
       <div className="text-center">
         <h2 className="text-xl font-bold">Invalid or expired invite</h2>
-        <p className="mt-2 text-gray-600">This invite link is no longer valid.</p>
+        <p className="mt-2 text-muted-foreground">This invite link is no longer valid.</p>
       </div>
     )
   }

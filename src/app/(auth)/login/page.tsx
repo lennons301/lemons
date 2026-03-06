@@ -69,7 +69,7 @@ export default function LoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Logging in...' : 'Log in'}
           </Button>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-primary underline">Sign up</Link>
           </p>

@@ -46,7 +46,7 @@ export default async function SettingsPage() {
     <div className="max-w-2xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">{household?.name ?? 'Settings'}</h1>
-        <p className="mt-1 text-gray-600">Manage your household members and settings.</p>
+        <p className="mt-1 text-muted-foreground">Manage your household members and settings.</p>
       </div>
 
       <MemberList members={members ?? []} isAdmin={isAdmin} />

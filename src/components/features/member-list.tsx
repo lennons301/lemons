@@ -36,10 +36,10 @@ export function MemberList({
                     {profile?.display_name ?? profile?.email ?? 'Unknown'}
                   </p>
                   {profile?.display_name && (
-                    <p className="text-xs text-gray-500">{profile.email}</p>
+                    <p className="text-xs text-muted-foreground">{profile.email}</p>
                   )}
                 </div>
-                <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+                <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-foreground">
                   {member.role}
                 </span>
               </li>
@@ -47,7 +47,7 @@ export function MemberList({
           })}
         </ul>
         {!isAdmin && (
-          <p className="mt-3 text-xs text-gray-500">Only admins can manage members.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Only admins can manage members.</p>
         )}
       </CardContent>
     </Card>
