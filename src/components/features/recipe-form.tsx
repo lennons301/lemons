@@ -23,6 +23,8 @@ interface RecipeFormProps {
     cook_time: number | null
     instructions: string[]
     source_url: string | null
+    source_author: string | null
+    source_book: string | null
     recipe_ingredients: IngredientRow[]
     recipe_tags: { tag_name: string }[]
   }
@@ -38,6 +40,8 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
   const [prepTime, setPrepTime] = useState(initialData?.prep_time?.toString() || '')
   const [cookTime, setCookTime] = useState(initialData?.cook_time?.toString() || '')
   const [sourceUrl, setSourceUrl] = useState(initialData?.source_url || '')
+  const [sourceAuthor, setSourceAuthor] = useState(initialData?.source_author || '')
+  const [sourceBook, setSourceBook] = useState(initialData?.source_book || '')
   const [instructions, setInstructions] = useState<string[]>(
     initialData?.instructions?.length ? initialData.instructions : ['']
   )
@@ -71,6 +75,8 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
       cook_time: cookTime ? parseInt(cookTime) : null,
       instructions: instructions.filter((s) => s.trim()),
       source_url: sourceUrl.trim() || null,
+      source_author: sourceAuthor.trim() || null,
+      source_book: sourceBook.trim() || null,
       household_id: householdId,
       ingredients: ingredients.map((ing, idx) => ({
         ...ing,
@@ -174,6 +180,8 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
         )
       }
       if (result.tags?.length) setTags(result.tags)
+      if (result.source_author) setSourceAuthor(result.source_author)
+      if (result.source_book) setSourceBook(result.source_book)
 
       // Save source files for upload after recipe creation
       setSourceFiles([...selectedFiles])
@@ -355,6 +363,26 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
               onChange={(e) => setSourceUrl(e.target.value)}
               placeholder="https://..."
             />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="sourceAuthor">Author</Label>
+              <Input
+                id="sourceAuthor"
+                value={sourceAuthor}
+                onChange={(e) => setSourceAuthor(e.target.value)}
+                placeholder="Julia Child"
+              />
+            </div>
+            <div>
+              <Label htmlFor="sourceBook">Book / Publication</Label>
+              <Input
+                id="sourceBook"
+                value={sourceBook}
+                onChange={(e) => setSourceBook(e.target.value)}
+                placeholder="Mastering the Art of French Cooking"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
