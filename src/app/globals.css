@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -45,75 +45,147 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Member colors — bright Mediterranean palette for avatars & assignments */
+  --color-member-azure: var(--member-azure);
+  --color-member-coral: var(--member-coral);
+  --color-member-lemon: var(--member-lemon);
+  --color-member-sage: var(--member-sage);
+  --color-member-bougainvillea: var(--member-bougainvillea);
+  --color-member-lavender: var(--member-lavender);
+  --color-member-tangerine: var(--member-tangerine);
+  --color-member-teal: var(--member-teal);
 }
 
+/* ============================================================
+   Amalfi Coast — Light Theme
+   Sun-bleached whites, azure sea, lemon groves, terracotta
+   ============================================================ */
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.985 0.008 85);
-  --foreground: oklch(0.18 0.02 60);
-  --card: oklch(0.993 0.004 85);
-  --card-foreground: oklch(0.18 0.02 60);
-  --popover: oklch(0.993 0.004 85);
-  --popover-foreground: oklch(0.18 0.02 60);
-  --primary: oklch(0.75 0.16 85);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --secondary: oklch(0.955 0.02 85);
-  --secondary-foreground: oklch(0.25 0.02 60);
-  --muted: oklch(0.955 0.015 85);
-  --muted-foreground: oklch(0.48 0.02 60);
-  --accent: oklch(0.92 0.04 85);
-  --accent-foreground: oklch(0.25 0.02 60);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.9 0.02 85);
-  --input: oklch(0.9 0.02 85);
-  --ring: oklch(0.75 0.16 85);
-  --chart-1: oklch(0.75 0.16 85);
-  --chart-2: oklch(0.65 0.14 55);
-  --chart-3: oklch(0.55 0.12 40);
-  --chart-4: oklch(0.7 0.15 70);
-  --chart-5: oklch(0.6 0.13 25);
-  --sidebar: oklch(0.25 0.025 60);
-  --sidebar-foreground: oklch(0.92 0.02 85);
-  --sidebar-primary: oklch(0.75 0.16 85);
-  --sidebar-primary-foreground: oklch(0.18 0.02 60);
-  --sidebar-accent: oklch(0.38 0.03 60);
-  --sidebar-accent-foreground: oklch(0.92 0.02 85);
-  --sidebar-border: oklch(0.35 0.02 60);
-  --sidebar-ring: oklch(0.75 0.16 85);
+
+  /* Backgrounds — sun-bleached plaster */
+  --background: oklch(0.98 0.006 80);
+  --foreground: oklch(0.22 0.02 55);
+
+  /* Cards — clean warm white */
+  --card: oklch(0.995 0.003 80);
+  --card-foreground: oklch(0.22 0.02 55);
+
+  /* Popovers */
+  --popover: oklch(0.995 0.003 80);
+  --popover-foreground: oklch(0.22 0.02 55);
+
+  /* Primary — Mediterranean azure */
+  --primary: oklch(0.60 0.17 250);
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* Secondary — warm sand */
+  --secondary: oklch(0.94 0.015 80);
+  --secondary-foreground: oklch(0.32 0.02 55);
+
+  /* Muted — soft warm gray */
+  --muted: oklch(0.94 0.008 80);
+  --muted-foreground: oklch(0.52 0.02 55);
+
+  /* Accent — soft lemon glow */
+  --accent: oklch(0.94 0.07 98);
+  --accent-foreground: oklch(0.30 0.03 55);
+
+  /* Destructive — terracotta coral */
+  --destructive: oklch(0.58 0.2 25);
+
+  /* Borders & inputs — warm light gray */
+  --border: oklch(0.91 0.008 80);
+  --input: oklch(0.91 0.008 80);
+  --ring: oklch(0.60 0.17 250);
+
+  /* Charts — Mediterranean palette */
+  --chart-1: oklch(0.60 0.17 250);
+  --chart-2: oklch(0.66 0.16 45);
+  --chart-3: oklch(0.80 0.15 98);
+  --chart-4: oklch(0.62 0.12 165);
+  --chart-5: oklch(0.62 0.20 340);
+
+  /* Sidebar — light, airy, barely tinted */
+  --sidebar: oklch(0.965 0.008 80);
+  --sidebar-foreground: oklch(0.35 0.02 55);
+  --sidebar-primary: oklch(0.60 0.17 250);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.92 0.04 250);
+  --sidebar-accent-foreground: oklch(0.22 0.02 55);
+  --sidebar-border: oklch(0.90 0.008 80);
+  --sidebar-ring: oklch(0.60 0.17 250);
+
+  /* Family member colors — vivid, high-contrast on white */
+  --member-azure: oklch(0.60 0.17 250);
+  --member-coral: oklch(0.65 0.19 30);
+  --member-lemon: oklch(0.82 0.16 98);
+  --member-sage: oklch(0.62 0.13 165);
+  --member-bougainvillea: oklch(0.62 0.22 340);
+  --member-lavender: oklch(0.62 0.15 295);
+  --member-tangerine: oklch(0.72 0.17 55);
+  --member-teal: oklch(0.60 0.13 200);
 }
 
+/* ============================================================
+   Dark Theme — Mediterranean night
+   Deep navy (not black), warm accents preserved
+   ============================================================ */
 .dark {
-  --background: oklch(0.16 0.02 60);
-  --foreground: oklch(0.92 0.02 85);
-  --card: oklch(0.22 0.02 60);
-  --card-foreground: oklch(0.92 0.02 85);
-  --popover: oklch(0.22 0.02 60);
-  --popover-foreground: oklch(0.92 0.02 85);
-  --primary: oklch(0.75 0.16 85);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --secondary: oklch(0.28 0.02 60);
-  --secondary-foreground: oklch(0.92 0.02 85);
-  --muted: oklch(0.28 0.02 60);
-  --muted-foreground: oklch(0.62 0.02 60);
-  --accent: oklch(0.28 0.02 60);
-  --accent-foreground: oklch(0.92 0.02 85);
-  --destructive: oklch(0.65 0.2 22);
-  --border: oklch(0.92 0.02 85 / 10%);
-  --input: oklch(0.92 0.02 85 / 15%);
-  --ring: oklch(0.75 0.16 85);
-  --chart-1: oklch(0.75 0.16 85);
-  --chart-2: oklch(0.65 0.14 55);
-  --chart-3: oklch(0.55 0.12 40);
-  --chart-4: oklch(0.7 0.15 70);
-  --chart-5: oklch(0.6 0.13 25);
-  --sidebar: oklch(0.18 0.02 60);
-  --sidebar-foreground: oklch(0.92 0.02 85);
-  --sidebar-primary: oklch(0.75 0.16 85);
-  --sidebar-primary-foreground: oklch(0.18 0.02 60);
-  --sidebar-accent: oklch(0.28 0.02 60);
-  --sidebar-accent-foreground: oklch(0.92 0.02 85);
-  --sidebar-border: oklch(0.92 0.02 85 / 10%);
-  --sidebar-ring: oklch(0.75 0.16 85);
+  --background: oklch(0.18 0.02 250);
+  --foreground: oklch(0.92 0.01 80);
+
+  --card: oklch(0.22 0.02 250);
+  --card-foreground: oklch(0.92 0.01 80);
+
+  --popover: oklch(0.22 0.02 250);
+  --popover-foreground: oklch(0.92 0.01 80);
+
+  /* Azure stays vivid in dark mode */
+  --primary: oklch(0.65 0.17 250);
+  --primary-foreground: oklch(0.15 0.02 250);
+
+  --secondary: oklch(0.26 0.02 250);
+  --secondary-foreground: oklch(0.90 0.01 80);
+
+  --muted: oklch(0.26 0.02 250);
+  --muted-foreground: oklch(0.62 0.02 80);
+
+  --accent: oklch(0.30 0.04 98);
+  --accent-foreground: oklch(0.90 0.01 80);
+
+  --destructive: oklch(0.65 0.2 25);
+
+  --border: oklch(0.90 0.01 80 / 12%);
+  --input: oklch(0.90 0.01 80 / 15%);
+  --ring: oklch(0.65 0.17 250);
+
+  --chart-1: oklch(0.65 0.17 250);
+  --chart-2: oklch(0.70 0.16 45);
+  --chart-3: oklch(0.82 0.15 98);
+  --chart-4: oklch(0.65 0.12 165);
+  --chart-5: oklch(0.65 0.20 340);
+
+  /* Sidebar — deep navy, slightly lighter than bg */
+  --sidebar: oklch(0.20 0.02 250);
+  --sidebar-foreground: oklch(0.90 0.01 80);
+  --sidebar-primary: oklch(0.65 0.17 250);
+  --sidebar-primary-foreground: oklch(0.15 0.02 250);
+  --sidebar-accent: oklch(0.28 0.03 250);
+  --sidebar-accent-foreground: oklch(0.90 0.01 80);
+  --sidebar-border: oklch(0.90 0.01 80 / 12%);
+  --sidebar-ring: oklch(0.65 0.17 250);
+
+  /* Member colors — slightly boosted for dark backgrounds */
+  --member-azure: oklch(0.65 0.17 250);
+  --member-coral: oklch(0.70 0.19 30);
+  --member-lemon: oklch(0.85 0.16 98);
+  --member-sage: oklch(0.65 0.13 165);
+  --member-bougainvillea: oklch(0.65 0.22 340);
+  --member-lavender: oklch(0.65 0.15 295);
+  --member-tangerine: oklch(0.75 0.17 55);
+  --member-teal: oklch(0.65 0.13 200);
 }
 
 @layer base {
