@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
     .select(`
       *,
       recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order)
+      recipe_images(id, url, type, sort_order),
+      recipe_members(person_id)
     `)
     .eq('household_id', householdId)
     .order('created_at', { ascending: false })
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, household_id, ingredients, tags } = body
+  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, household_id, ingredients, tags, members } = body
 
   if (!title || !household_id) {
     return NextResponse.json({ error: 'title and household_id are required' }, { status: 400 })
@@ -138,6 +139,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Insert recipe_members if provided
+  if (members && members.length > 0) {
+    const memberRows = members.map((personId: string) => ({
+      recipe_id: recipe.id,
+      person_id: personId,
+    }))
+
+    const { error: memberError } = await supabase
+      .from('recipe_members')
+      .insert(memberRows)
+
+    if (memberError) {
+      console.error('Failed to insert recipe_members:', memberError.message)
+    }
+  }
+
   // Return full recipe with relations
   const { data: fullRecipe } = await supabase
     .from('recipes')
@@ -145,7 +162,8 @@ export async function POST(request: NextRequest) {
       *,
       recipe_ingredients(*),
       recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order)
+      recipe_images(id, url, type, sort_order),
+      recipe_members(person_id)
     `)
     .eq('id', recipe.id)
     .single()
