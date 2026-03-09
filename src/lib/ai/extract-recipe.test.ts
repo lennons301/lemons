@@ -59,6 +59,30 @@ describe('validateExtractionResult', () => {
     const input = { title: 'Test', ingredients: [{ raw_text: 'foo' }], instructions: [] }
     expect(() => validateExtractionResult(input as any)).toThrow()
   })
+
+  it('extracts source_author and source_book when present', () => {
+    const input = {
+      title: 'Coq au Vin',
+      ingredients: [{ raw_text: '1 chicken' }],
+      instructions: ['Cook it'],
+      source_author: 'Julia Child',
+      source_book: 'Mastering the Art of French Cooking',
+    }
+    const result = validateExtractionResult(input as any)
+    expect(result.source_author).toBe('Julia Child')
+    expect(result.source_book).toBe('Mastering the Art of French Cooking')
+  })
+
+  it('defaults source_author and source_book to null when missing', () => {
+    const input = {
+      title: 'Test Recipe',
+      ingredients: [{ raw_text: 'some ingredient' }],
+      instructions: ['Step 1'],
+    }
+    const result = validateExtractionResult(input as any)
+    expect(result.source_author).toBeNull()
+    expect(result.source_book).toBeNull()
+  })
 })
 
 const VALID_RESPONSE = JSON.stringify({

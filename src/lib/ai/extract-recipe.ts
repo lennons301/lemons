@@ -22,6 +22,8 @@ export interface ExtractionResult {
   ingredients: ExtractedIngredient[]
   instructions: string[]
   tags: string[]
+  source_author: string | null
+  source_book: string | null
 }
 
 export function validateExtractionResult(input: any): ExtractionResult {
@@ -50,6 +52,8 @@ export function validateExtractionResult(input: any): ExtractionResult {
     })),
     instructions: input.instructions.filter((s: any) => typeof s === 'string' && s.trim()),
     tags: Array.isArray(input.tags) ? input.tags.map((t: string) => t.toLowerCase().trim()) : [],
+    source_author: typeof input.source_author === 'string' ? input.source_author : null,
+    source_book: typeof input.source_book === 'string' ? input.source_book : null,
   }
 }
 
@@ -75,7 +79,9 @@ Return ONLY valid JSON with this exact structure:
     "Step 1 text",
     "Step 2 text"
   ],
-  "tags": ["cuisine-type", "dietary-info", "meal-type"]
+  "tags": ["cuisine-type", "dietary-info", "meal-type"],
+  "source_author": "Author name if identifiable",
+  "source_book": "Book or publication title if identifiable"
 }
 
 - If multiple images are provided, they are all part of the same recipe (e.g. different pages, front/back of card). Combine information from all images into a single recipe.
@@ -88,7 +94,9 @@ Rules:
 - instructions: each step as a separate string, in order.
 - tags: lowercase, relevant categories (e.g. "italian", "vegetarian", "dinner", "quick").
 - If something is unclear or illegible, make your best guess and note uncertainty in the relevant notes field.
-- prep_time and cook_time in minutes. null if not stated.`
+- prep_time and cook_time in minutes. null if not stated.
+- source_author: the chef, blogger, or author if identifiable from the images (cover page, headers, attribution text). null if not found.
+- source_book: the book, website, or publication name if identifiable. null if not found.`
 
 export async function extractRecipeFromImages(
   images: ImageInput[],
