@@ -430,12 +430,13 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
 }
 
 /** Compress an image to fit within Claude's 5MB base64 limit using canvas.
- *  Downscales to max 2048px on longest side and re-encodes as JPEG at 0.85 quality. */
+ *  Base64 inflates size ~33%, so raw bytes must stay under ~3.75MB.
+ *  Downscales to max 2048px on longest side and iteratively lowers JPEG
+ *  quality until the result fits. */
 function compressImage(file: File): Promise<File> {
-  const MAX_BYTES = 4.5 * 1024 * 1024 // 4.5MB to leave headroom after base64 encoding
+  // 5MB base64 ≈ 3.75MB raw bytes (base64 adds ~33% overhead)
+  const MAX_RAW_BYTES = 3.75 * 1024 * 1024
   const MAX_DIM = 2048
-
-  if (file.size <= MAX_BYTES) return Promise.resolve(file)
 
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -453,14 +454,21 @@ function compressImage(file: File): Promise<File> {
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0, width, height)
 
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error('Canvas compression failed'))
-          resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
-        },
-        'image/jpeg',
-        0.85
-      )
+      // Iteratively lower quality until we fit under the base64 limit
+      const tryQuality = (quality: number) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Canvas compression failed'))
+            if (blob.size > MAX_RAW_BYTES && quality > 0.3) {
+              return tryQuality(quality - 0.1)
+            }
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      tryQuality(0.85)
     }
     img.onerror = () => reject(new Error(`Failed to load image: ${file.name}`))
     img.src = URL.createObjectURL(file)
