@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
 
   const search = searchParams.get('search') || ''
   const tag = searchParams.get('tag') || ''
+  const author = searchParams.get('author') || ''
+  const book = searchParams.get('book') || ''
 
   let query = supabase
     .from('recipes')
@@ -45,6 +47,16 @@ export async function GET(request: NextRequest) {
       r.recipe_tags?.some((t: any) => t.tag_name === tag)
     )
   }
+  if (author) {
+    recipes = recipes.filter((r: any) =>
+      r.source_author?.toLowerCase() === author.toLowerCase()
+    )
+  }
+  if (book) {
+    recipes = recipes.filter((r: any) =>
+      r.source_book?.toLowerCase() === book.toLowerCase()
+    )
+  }
 
   return NextResponse.json(recipes)
 }
@@ -58,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { title, description, servings, prep_time, cook_time, instructions, source_url, household_id, ingredients, tags } = body
+  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, household_id, ingredients, tags } = body
 
   if (!title || !household_id) {
     return NextResponse.json({ error: 'title and household_id are required' }, { status: 400 })
@@ -75,6 +87,8 @@ export async function POST(request: NextRequest) {
       cook_time: cook_time || null,
       instructions: instructions || [],
       source_url: source_url || null,
+      source_author: source_author || null,
+      source_book: source_book || null,
       household_id,
       created_by: user.id,
     })

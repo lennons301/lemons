@@ -47,7 +47,7 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { title, description, servings, prep_time, cook_time, instructions, source_url, ingredients, tags } = body
+  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, ingredients, tags } = body
 
   // Update recipe fields
   const { error: recipeError } = await supabase
@@ -60,6 +60,8 @@ export async function PUT(
       cook_time: cook_time ?? null,
       instructions: instructions ?? [],
       source_url: source_url ?? null,
+      source_author: source_author ?? null,
+      source_book: source_book ?? null,
     })
     .eq('id', id)
 
