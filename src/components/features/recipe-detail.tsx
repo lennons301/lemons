@@ -11,8 +11,11 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { scaleIngredients } from '@/lib/utils/scaling'
+import { type Person } from '@/components/features/member-picker'
+import { getMemberBgClass } from '@/lib/utils/member-colors'
 
 interface RecipeDetailProps {
+  persons?: Person[]
   recipe: {
     id: string
     title: string
@@ -38,10 +41,11 @@ interface RecipeDetailProps {
     }[]
     recipe_tags: { tag_name: string }[]
     recipe_images: { id: string; url: string; type: string }[]
+    recipe_members?: { person_id: string }[]
   }
 }
 
-export function RecipeDetail({ recipe }: RecipeDetailProps) {
+export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
   const router = useRouter()
   const [desiredServings, setDesiredServings] = useState(recipe.servings)
   const [deleting, setDeleting] = useState(false)
@@ -153,6 +157,25 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
                 {t.tag_name}
               </Badge>
             ))}
+          </div>
+        )}
+        {recipe.recipe_members && recipe.recipe_members.length > 0 && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Suitable for:</span>
+            <div className="flex flex-wrap gap-1">
+              {recipe.recipe_members.map((rm) => {
+                const person = persons.find((p) => p.id === rm.person_id)
+                if (!person) return null
+                return (
+                  <span
+                    key={person.id}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white ${getMemberBgClass(person.id)}`}
+                  >
+                    {person.display_name || 'Unknown'}
+                  </span>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>

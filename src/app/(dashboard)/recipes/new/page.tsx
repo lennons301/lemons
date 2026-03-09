@@ -15,5 +15,10 @@ export default async function NewRecipePage() {
 
   if (!profile?.default_household_id) redirect('/onboarding')
 
-  return <RecipeForm householdId={profile.default_household_id} />
+  const { data: persons } = await supabase
+    .from('household_persons')
+    .select('id, display_name, date_of_birth, person_type')
+    .eq('household_id', profile.default_household_id)
+
+  return <RecipeForm householdId={profile.default_household_id} persons={persons || []} />
 }

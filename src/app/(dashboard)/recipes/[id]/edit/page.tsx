@@ -20,12 +20,18 @@ export default async function EditRecipePage({
 
   if (!profile?.default_household_id) redirect('/onboarding')
 
+  const { data: persons } = await supabase
+    .from('household_persons')
+    .select('id, display_name, date_of_birth, person_type')
+    .eq('household_id', profile.default_household_id)
+
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select(`
       *,
       recipe_ingredients(*),
-      recipe_tags(tag_name)
+      recipe_tags(tag_name),
+      recipe_members(person_id)
     `)
     .eq('id', id)
     .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
@@ -37,6 +43,7 @@ export default async function EditRecipePage({
     <RecipeForm
       householdId={profile.default_household_id}
       initialData={recipe as any}
+      persons={persons || []}
     />
   )
 }

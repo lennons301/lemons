@@ -8,9 +8,9 @@ import { RecipeSearch } from '@/components/features/recipe-search'
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; tag?: string; author?: string; book?: string }>
+  searchParams: Promise<{ search?: string; tag?: string; author?: string; book?: string; member?: string }>
 }) {
-  const { search, tag, author, book } = await searchParams
+  const { search, tag, author, book, member } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -26,13 +26,20 @@ export default async function RecipesPage({
   const householdId = profile?.default_household_id
   if (!householdId) return null
 
+  // Fetch household persons for member filter
+  const { data: persons } = await supabase
+    .from('household_persons')
+    .select('id, display_name, date_of_birth, person_type')
+    .eq('household_id', householdId)
+
   // Fetch recipes
   let query = supabase
     .from('recipes')
     .select(`
       *,
       recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order)
+      recipe_images(id, url, type, sort_order),
+      recipe_members(person_id)
     `)
     .eq('household_id', householdId)
     .order('created_at', { ascending: false })
@@ -59,6 +66,21 @@ export default async function RecipesPage({
       r.source_book?.toLowerCase() === book.toLowerCase()
     )
   }
+  if (member) {
+    if (member === 'everyone') {
+      // Recipes where ALL household persons are tagged
+      const personIds = (persons || []).map((p: any) => p.id)
+      filteredRecipes = filteredRecipes.filter((r: any) =>
+        personIds.every((pid: string) =>
+          r.recipe_members?.some((rm: any) => rm.person_id === pid)
+        )
+      )
+    } else {
+      filteredRecipes = filteredRecipes.filter((r: any) =>
+        r.recipe_members?.some((rm: any) => rm.person_id === member)
+      )
+    }
+  }
 
   // Collect all unique tags for the filter
   const allTags = Array.from(
@@ -81,15 +103,20 @@ export default async function RecipesPage({
         </Link>
       </div>
 
-      <RecipeSearch allTags={allTags} activeTag={tag || null} />
+      <RecipeSearch
+        allTags={allTags}
+        activeTag={tag || null}
+        persons={persons || []}
+        activeMember={member || null}
+      />
 
       {filteredRecipes.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted-foreground text-lg">
-            {search || tag || author || book ? 'No recipes match your search.' : 'No recipes yet.'}
+            {search || tag || author || book || member ? 'No recipes match your search.' : 'No recipes yet.'}
           </p>
           <p className="text-muted-foreground mt-1 text-sm">
-            {!search && !tag && !author && !book && 'Add your first recipe to get started.'}
+            {!search && !tag && !author && !book && !member && 'Add your first recipe to get started.'}
           </p>
         </div>
       ) : (

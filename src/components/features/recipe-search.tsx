@@ -5,13 +5,17 @@ import { useCallback, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { getMemberBgClass } from '@/lib/utils/member-colors'
+import { type Person } from '@/components/features/member-picker'
 
 interface RecipeSearchProps {
   allTags: string[]
   activeTag: string | null
+  persons?: Person[]
+  activeMember?: string | null
 }
 
-export function RecipeSearch({ allTags, activeTag }: RecipeSearchProps) {
+export function RecipeSearch({ allTags, activeTag, persons = [], activeMember = null }: RecipeSearchProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
@@ -67,6 +71,31 @@ export function RecipeSearch({ allTags, activeTag }: RecipeSearchProps) {
               onClick={() => updateParams('tag', tag === activeTag ? null : tag)}
             >
               {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {persons.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-muted-foreground mr-1 text-xs">Suitable for:</span>
+          <Badge
+            variant={activeMember === 'everyone' ? 'default' : 'outline'}
+            className="cursor-pointer"
+            onClick={() => updateParams('member', activeMember === 'everyone' ? null : 'everyone')}
+          >
+            Everyone
+          </Badge>
+          {persons.map((person) => (
+            <Badge
+              key={person.id}
+              variant={person.id === activeMember ? 'default' : 'outline'}
+              className="cursor-pointer"
+              onClick={() => updateParams('member', person.id === activeMember ? null : person.id)}
+            >
+              <span
+                className={`mr-1 inline-block h-2 w-2 rounded-full ${getMemberBgClass(person.id)}`}
+              />
+              {person.display_name || 'Unknown'}
             </Badge>
           ))}
         </div>

@@ -19,7 +19,8 @@ export async function GET(
       *,
       recipe_ingredients(*),
       recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order)
+      recipe_images(id, url, type, sort_order),
+      recipe_members(person_id)
     `)
     .eq('id', id)
     .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
@@ -47,7 +48,7 @@ export async function PUT(
   }
 
   const body = await request.json()
-  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, ingredients, tags } = body
+  const { title, description, servings, prep_time, cook_time, instructions, source_url, source_author, source_book, ingredients, tags, members } = body
 
   // Update recipe fields
   const { error: recipeError } = await supabase
@@ -116,6 +117,26 @@ export async function PUT(
     }
   }
 
+  // Replace recipe_members: delete all, re-insert
+  if (members !== undefined) {
+    await supabase.from('recipe_members').delete().eq('recipe_id', id)
+
+    if (members.length > 0) {
+      const memberRows = members.map((personId: string) => ({
+        recipe_id: id,
+        person_id: personId,
+      }))
+
+      const { error: memberError } = await supabase
+        .from('recipe_members')
+        .insert(memberRows)
+
+      if (memberError) {
+        console.error('Failed to replace recipe_members:', memberError.message)
+      }
+    }
+  }
+
   // Return updated recipe with relations
   const { data: fullRecipe } = await supabase
     .from('recipes')
@@ -123,7 +144,8 @@ export async function PUT(
       *,
       recipe_ingredients(*),
       recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order)
+      recipe_images(id, url, type, sort_order),
+      recipe_members(person_id)
     `)
     .eq('id', id)
     .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
