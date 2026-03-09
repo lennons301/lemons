@@ -2,11 +2,11 @@
 ALTER TABLE household_managed_members
   ADD COLUMN date_of_birth date;
 
--- Age category helper (immutable for index usage)
+-- Age category helper (STABLE because age() depends on current_date)
 CREATE OR REPLACE FUNCTION public.age_category(dob date)
 RETURNS text
 LANGUAGE sql
-IMMUTABLE
+STABLE
 AS $$
   SELECT CASE
     WHEN dob IS NULL THEN NULL

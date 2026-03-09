@@ -6,13 +6,7 @@ import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
-
-interface Person {
-  id: string
-  display_name: string | null
-  date_of_birth: string | null
-  person_type: string
-}
+import { type Person } from '@/components/features/member-picker'
 
 interface RecipeSearchProps {
   allTags: string[]
