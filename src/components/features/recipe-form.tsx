@@ -137,7 +137,8 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
     setError(null)
 
     const formData = new FormData()
-    selectedFiles.forEach((file) => formData.append('images', file))
+    const compressed = await Promise.all(selectedFiles.map(compressImage))
+    compressed.forEach((file) => formData.append('images', file))
     if (hint.trim()) formData.append('hint', hint.trim())
     formData.append('householdId', householdId)
 
@@ -426,6 +427,44 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
       </div>
     </form>
   )
+}
+
+/** Compress an image to fit within Claude's 5MB base64 limit using canvas.
+ *  Downscales to max 2048px on longest side and re-encodes as JPEG at 0.85 quality. */
+function compressImage(file: File): Promise<File> {
+  const MAX_BYTES = 4.5 * 1024 * 1024 // 4.5MB to leave headroom after base64 encoding
+  const MAX_DIM = 2048
+
+  if (file.size <= MAX_BYTES) return Promise.resolve(file)
+
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      let { width, height } = img
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const scale = MAX_DIM / Math.max(width, height)
+        width = Math.round(width * scale)
+        height = Math.round(height * scale)
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject(new Error('Canvas compression failed'))
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
+        },
+        'image/jpeg',
+        0.85
+      )
+    }
+    img.onerror = () => reject(new Error(`Failed to load image: ${file.name}`))
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 function buildRawText(ing: IngredientRow): string {
