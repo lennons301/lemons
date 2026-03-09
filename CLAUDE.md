@@ -61,6 +61,13 @@ src/
 └── types/                # TypeScript types
 ```
 
+## Deployment
+
+- **Vercel** auto-deploys from `main` (production) and PR branches (preview)
+- **Supabase migrations** run automatically on deploy via Supabase GitHub integration
+- **Vercel project:** `lennons301s-projects/lemons`
+- **Vercel CLI:** use `vercel ls`, `vercel logs <url>` to inspect deployments
+
 ## Environment Isolation
 
 **Never develop against the production database.**
@@ -75,6 +82,7 @@ Production:    Vercel production → production Supabase project
 - Verified on staging before production
 - `supabase/seed.sql` provides repeatable test data for local/staging
 - Supabase branching can be used if available on the plan
+- **Note:** Local Docker/Supabase not always available (WSL2). Type regeneration may need to be done manually.
 
 ## Key Conventions
 
@@ -84,6 +92,18 @@ Production:    Vercel production → production Supabase project
 - **RRULE (RFC 5545)** for all recurrence (calendar events, recurring tasks).
 - **Shopping lists are todo lists** with `list_type = 'shopping'`. No separate shopping entity.
 - **Meal plan entries are not duplicated into calendar_events.** Calendar views query both tables and composite them.
+- **Unified person model:** `household_persons` view unions `household_members` (adults with accounts) and `household_managed_members` (kids, no accounts). All features reference person IDs from this view.
+- **Many-to-many relations** (tags, ingredients, recipe_members) use delete-and-reinsert on update. No upsert.
+- **Member colors** are deterministic by ID hash (8 colors in `member-colors.ts`). Used for avatars, badges, calendar.
+- **Claude API images** must be under 5MB base64. Frontend compresses all images before sending (iterative JPEG quality reduction).
+
+## Key Files
+
+- `docs/plans/` — Design docs and implementation plans
+- `supabase/migrations/` — Sequential numbered migrations (00001–00006+)
+- `src/components/features/` — Feature components (recipe-form, recipe-detail, member-picker, tag-input, etc.)
+- `src/lib/utils/member-colors.ts` — Deterministic member color assignment
+- `src/lib/ai/extract-recipe.ts` — Claude API recipe extraction
 
 ## Design Document
 
