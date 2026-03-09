@@ -43,7 +43,7 @@ export function normalizeUnit(unit: string): string {
 // All conversions go through base unit
 type UnitGroup = 'volume' | 'weight'
 
-const UNIT_TO_BASE: Record<string, { group: UnitGroup; factor: number }> = {
+export const UNIT_TO_BASE: Record<string, { group: UnitGroup; factor: number }> = {
   // Volume → millilitre
   millilitre: { group: 'volume', factor: 1 },
   litre: { group: 'volume', factor: 1000 },

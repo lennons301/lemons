@@ -392,6 +392,247 @@ export type Database = {
           },
         ]
       }
+      meal_plan_entries: {
+        Row: {
+          id: string
+          household_id: string
+          date: string
+          meal_type: string
+          recipe_id: string | null
+          custom_name: string | null
+          servings: number
+          assigned_to: string[]
+          created_by: string
+          status: string
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          date: string
+          meal_type: string
+          recipe_id?: string | null
+          custom_name?: string | null
+          servings?: number
+          assigned_to?: string[]
+          created_by: string
+          status?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          date?: string
+          meal_type?: string
+          recipe_id?: string | null
+          custom_name?: string | null
+          servings?: number
+          assigned_to?: string[]
+          created_by?: string
+          status?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_entries_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      todo_lists: {
+        Row: {
+          id: string
+          household_id: string
+          title: string
+          list_type: string
+          created_by: string
+          color: string | null
+          pinned: boolean
+          archived: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          title: string
+          list_type?: string
+          created_by: string
+          color?: string | null
+          pinned?: boolean
+          archived?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          title?: string
+          list_type?: string
+          created_by?: string
+          color?: string | null
+          pinned?: boolean
+          archived?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_lists_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_lists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      todo_items: {
+        Row: {
+          id: string
+          list_id: string
+          title: string
+          description: string | null
+          status: string
+          priority: string
+          due_date: string | null
+          assigned_to: string | null
+          created_by: string
+          sort_order: number
+          parent_item_id: string | null
+          recurrence_rule: string | null
+          completed_at: string | null
+          quantity: number | null
+          unit: string | null
+          tags: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          list_id: string
+          title: string
+          description?: string | null
+          status?: string
+          priority?: string
+          due_date?: string | null
+          assigned_to?: string | null
+          created_by: string
+          sort_order?: number
+          parent_item_id?: string | null
+          recurrence_rule?: string | null
+          completed_at?: string | null
+          quantity?: number | null
+          unit?: string | null
+          tags?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          list_id?: string
+          title?: string
+          description?: string | null
+          status?: string
+          priority?: string
+          due_date?: string | null
+          assigned_to?: string | null
+          created_by?: string
+          sort_order?: number
+          parent_item_id?: string | null
+          recurrence_rule?: string | null
+          completed_at?: string | null
+          quantity?: number | null
+          unit?: string | null
+          tags?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "todo_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "todo_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_staples: {
+        Row: {
+          id: string
+          household_id: string
+          name: string
+          default_quantity: number | null
+          default_unit: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          name: string
+          default_quantity?: number | null
+          default_unit?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          name?: string
+          default_quantity?: number | null
+          default_unit?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_staples_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           id: string
