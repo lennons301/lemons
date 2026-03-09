@@ -91,6 +91,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_by: string
+          date_of_birth: string | null
           display_name: string
           household_id: string
           id: string
@@ -99,6 +100,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_by: string
+          date_of_birth?: string | null
           display_name: string
           household_id: string
           id?: string
@@ -107,6 +109,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_by?: string
+          date_of_birth?: string | null
           display_name?: string
           household_id?: string
           id?: string
@@ -337,6 +340,32 @@ export type Database = {
           },
         ]
       }
+      recipe_members: {
+        Row: {
+          created_at: string
+          person_id: string
+          recipe_id: string
+        }
+        Insert: {
+          created_at?: string
+          person_id: string
+          recipe_id: string
+        }
+        Update: {
+          created_at?: string
+          person_id?: string
+          recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_members_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipe_tags: {
         Row: {
           id: string
@@ -425,9 +454,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      household_persons: {
+        Row: {
+          id: string
+          household_id: string
+          profile_id: string | null
+          display_name: string | null
+          date_of_birth: string | null
+          person_type: string
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      age_category: { Args: { dob: string }; Returns: string }
       get_my_admin_household_ids: { Args: never; Returns: string[] }
       get_my_household_ids: { Args: never; Returns: string[] }
     }
