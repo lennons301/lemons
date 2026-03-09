@@ -10,7 +10,7 @@ import { getWeekStart, getWeekDays, formatWeekLabel, shiftWeek, MEAL_TYPES, type
 
 interface Person {
   id: string
-  display_name: string
+  display_name: string | null
   date_of_birth: string | null
   person_type: string
 }

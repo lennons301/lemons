@@ -6,7 +6,7 @@ import { MealCard } from './meal-card'
 
 interface MealCellProps {
   entries: any[]
-  persons: { id: string; display_name: string }[]
+  persons: { id: string; display_name: string | null }[]
   onAdd: () => void
   onEdit: (entry: any) => void
   onDelete: (entryId: string) => void

@@ -14,7 +14,7 @@ interface MealCardProps {
     status: string
     recipes?: { id: string; title: string; recipe_images?: { url: string; type: string }[] } | null
   }
-  persons: { id: string; display_name: string }[]
+  persons: { id: string; display_name: string | null }[]
   onEdit: () => void
   onDelete: () => void
 }
@@ -44,9 +44,9 @@ export function MealCard({ entry, persons, onEdit, onDelete }: MealCardProps) {
               <span
                 key={p.id}
                 className={`inline-block h-4 w-4 rounded-full text-[10px] leading-4 text-center text-white ${getMemberBgClass(p.id)}`}
-                title={p.display_name}
+                title={p.display_name || 'Unknown'}
               >
-                {p.display_name[0]}
+                {(p.display_name || '?')[0]}
               </span>
             ))}
           </div>
