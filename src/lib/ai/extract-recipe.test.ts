@@ -24,6 +24,8 @@ describe('validateExtractionResult', () => {
       ],
       instructions: ['Dice the chicken', 'Fry the onion', 'Add spices', 'Simmer'],
       tags: ['curry', 'chicken', 'dinner'],
+      source_author: null,
+      source_book: null,
     }
     const result = validateExtractionResult(input)
     expect(result.title).toBe('Chicken Curry')
@@ -94,6 +96,8 @@ const VALID_RESPONSE = JSON.stringify({
   ingredients: [{ raw_text: '1 cup flour', quantity: 1, unit: 'cup', name: 'flour', notes: null }],
   instructions: ['Mix ingredients', 'Bake at 350F'],
   tags: ['baking'],
+  source_author: 'Mary Berry',
+  source_book: 'Baking Bible',
 })
 
 describe('extractRecipeFromImages', () => {
@@ -109,6 +113,8 @@ describe('extractRecipeFromImages', () => {
     const result = await extractRecipeFromImages(images)
 
     expect(result.title).toBe('Test Recipe')
+    expect(result.source_author).toBe('Mary Berry')
+    expect(result.source_book).toBe('Baking Bible')
     expect(mockCreate).toHaveBeenCalledTimes(1)
 
     const call = mockCreate.mock.calls[0][0]
