@@ -62,6 +62,7 @@ export function RecipeForm({ householdId, persons = [], initialData }: RecipeFor
   const [error, setError] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [sourceFiles, setSourceFiles] = useState<File[]>([])
+  const [heroFile, setHeroFile] = useState<File | null>(null)
   const [hint, setHint] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,19 +106,34 @@ export function RecipeForm({ householdId, persons = [], initialData }: RecipeFor
     if (res.ok) {
       const recipe = await res.json()
 
-      // Upload source images if we have them from extraction
+      // Upload hero image first, then source images
+      const imageUploads: Promise<Response>[] = []
+
+      if (heroFile) {
+        const heroForm = new FormData()
+        heroForm.append('image', heroFile)
+        heroForm.append('type', 'photo')
+        imageUploads.push(fetch(`/api/recipes/${recipe.id}/images`, {
+          method: 'POST',
+          body: heroForm,
+        }))
+      }
+
       if (sourceFiles.length > 0) {
-        const uploadPromises = sourceFiles.map(async (file) => {
+        sourceFiles.forEach((file) => {
           const formData = new FormData()
           formData.append('image', file)
           formData.append('type', 'source')
-          return fetch(`/api/recipes/${recipe.id}/images`, {
+          imageUploads.push(fetch(`/api/recipes/${recipe.id}/images`, {
             method: 'POST',
             body: formData,
-          })
+          }))
         })
-        // Fire and forget — don't block navigation for source image uploads
-        Promise.all(uploadPromises).catch(console.error)
+      }
+
+      // Fire and forget — don't block navigation for image uploads
+      if (imageUploads.length > 0) {
+        Promise.all(imageUploads).catch(console.error)
       }
 
       router.push(`/recipes/${recipe.id}`)
@@ -189,6 +205,13 @@ export function RecipeForm({ householdId, persons = [], initialData }: RecipeFor
       if (result.tags?.length) setTags(result.tags)
       if (result.source_author) setSourceAuthor(result.source_author)
       if (result.source_book) setSourceBook(result.source_book)
+
+      // Crop hero image if Claude identified one
+      if (result.hero_image && selectedFiles[result.hero_image.image_index]) {
+        const heroSource = selectedFiles[result.hero_image.image_index]
+        const cropped = await cropHeroImage(heroSource, result.hero_image.crop)
+        setHeroFile(cropped)
+      }
 
       // Save source files for upload after recipe creation
       setSourceFiles([...selectedFiles])
@@ -478,6 +501,50 @@ export function RecipeForm({ householdId, persons = [], initialData }: RecipeFor
       </div>
     </form>
   )
+}
+
+/** Crop a hero image from a source file using percentage-based coordinates.
+ *  If no crop region, returns the original file re-encoded as JPEG. */
+function cropHeroImage(
+  file: File,
+  crop: { x: number; y: number; width: number; height: number } | null
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const sx = crop ? Math.round((crop.x / 100) * img.width) : 0
+      const sy = crop ? Math.round((crop.y / 100) * img.height) : 0
+      const sw = crop ? Math.round((crop.width / 100) * img.width) : img.width
+      const sh = crop ? Math.round((crop.height / 100) * img.height) : img.height
+
+      // Cap output at 1200px on longest side for hero display
+      const maxDim = 1200
+      let dw = sw
+      let dh = sh
+      if (dw > maxDim || dh > maxDim) {
+        const scale = maxDim / Math.max(dw, dh)
+        dw = Math.round(dw * scale)
+        dh = Math.round(dh * scale)
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = dw
+      canvas.height = dh
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject(new Error('Failed to crop hero image'))
+          resolve(new File([blob], 'hero.jpg', { type: 'image/jpeg' }))
+        },
+        'image/jpeg',
+        0.85
+      )
+    }
+    img.onerror = () => reject(new Error('Failed to load image for cropping'))
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 /** Compress an image to fit within Claude's 5MB base64 limit using canvas.

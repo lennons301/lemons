@@ -13,6 +13,13 @@ export interface ExtractedIngredient {
   notes: string | null
 }
 
+export interface HeroImageInfo {
+  /** 0-based index of the image that best shows the finished dish */
+  image_index: number
+  /** Crop region as percentages (0-100) of the original image dimensions */
+  crop: { x: number; y: number; width: number; height: number } | null
+}
+
 export interface ExtractionResult {
   title: string
   description: string | null
@@ -24,6 +31,7 @@ export interface ExtractionResult {
   tags: string[]
   source_author: string | null
   source_book: string | null
+  hero_image: HeroImageInfo | null
 }
 
 export function validateExtractionResult(input: any): ExtractionResult {
@@ -54,6 +62,19 @@ export function validateExtractionResult(input: any): ExtractionResult {
     tags: Array.isArray(input.tags) ? input.tags.map((t: string) => t.toLowerCase().trim()) : [],
     source_author: typeof input.source_author === 'string' ? input.source_author : null,
     source_book: typeof input.source_book === 'string' ? input.source_book : null,
+    hero_image: input.hero_image && typeof input.hero_image.image_index === 'number'
+      ? {
+          image_index: input.hero_image.image_index,
+          crop: input.hero_image.crop && typeof input.hero_image.crop.x === 'number'
+            ? {
+                x: input.hero_image.crop.x,
+                y: input.hero_image.crop.y,
+                width: input.hero_image.crop.width,
+                height: input.hero_image.crop.height,
+              }
+            : null,
+        }
+      : null,
   }
 }
 
@@ -81,7 +102,11 @@ Return ONLY valid JSON with this exact structure:
   ],
   "tags": ["cuisine-type", "dietary-info", "meal-type"],
   "source_author": "Author name if identifiable",
-  "source_book": "Book or publication title if identifiable"
+  "source_book": "Book or publication title if identifiable",
+  "hero_image": {
+    "image_index": 0,
+    "crop": { "x": 10, "y": 5, "width": 45, "height": 50 }
+  }
 }
 
 - If multiple images are provided, they are all part of the same recipe (e.g. different pages, front/back of card). Combine information from all images into a single recipe.
@@ -96,7 +121,10 @@ Rules:
 - If something is unclear or illegible, make your best guess and note uncertainty in the relevant notes field.
 - prep_time and cook_time in minutes. null if not stated.
 - source_author: the chef, blogger, or author if identifiable from the images (cover page, headers, attribution text). null if not found.
-- source_book: the book, website, or publication name if identifiable. null if not found.`
+- source_book: the book, website, or publication name if identifiable. null if not found.
+- hero_image: identify the best photo of the finished dish to use as the recipe's display image.
+  - image_index: 0-based index of which provided image contains the best view of the finished food. If no image shows the food, set hero_image to null.
+  - crop: if the food photo is part of a larger image (e.g. a cookbook page with both text and a photo), provide crop coordinates as PERCENTAGES (0-100) of the image dimensions to extract just the food portion. x/y is the top-left corner. Set to null if the entire image is suitable (e.g. a standalone food photo).`
 
 export async function extractRecipeFromImages(
   images: ImageInput[],
