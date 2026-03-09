@@ -159,11 +159,11 @@ export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
             ))}
           </div>
         )}
-        {recipe.recipe_members && recipe.recipe_members.length > 0 && (
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Suitable for:</span>
-            <div className="flex flex-wrap gap-1">
-              {recipe.recipe_members.map((rm) => {
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">Suitable for:</span>
+          <div className="flex flex-wrap gap-1">
+            {recipe.recipe_members && recipe.recipe_members.length > 0 ? (
+              recipe.recipe_members.map((rm) => {
                 const person = persons.find((p) => p.id === rm.person_id)
                 if (!person) return null
                 return (
@@ -174,10 +174,12 @@ export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
                     {person.display_name || 'Unknown'}
                   </span>
                 )
-              })}
-            </div>
+              })
+            ) : (
+              <Badge variant="secondary">Adults</Badge>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       <Separator />
