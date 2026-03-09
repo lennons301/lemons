@@ -4,6 +4,7 @@ import { MemberList } from '@/components/features/member-list'
 import { InviteLinkGenerator } from '@/components/features/invite-link-generator'
 import { ManagedMemberForm } from '@/components/features/managed-member-form'
 import { ApiKeySettings } from '@/components/features/api-key-settings'
+import { StaplesManager } from '@/components/features/staples-manager'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -38,6 +39,13 @@ export default async function SettingsPage() {
     .select('*')
     .eq('household_id', householdId)
 
+  // Fetch staples
+  const { data: staples } = await supabase
+    .from('household_staples')
+    .select('*')
+    .eq('household_id', householdId)
+    .order('name', { ascending: true })
+
   // Check if current user is admin
   const currentMember = members?.find((m) => m.profile_id === user.id)
   const isAdmin = currentMember?.role === 'admin'
@@ -60,6 +68,8 @@ export default async function SettingsPage() {
       {isAdmin && <InviteLinkGenerator householdId={householdId} />}
 
       {isAdmin && <ApiKeySettings householdId={householdId} />}
+
+      <StaplesManager householdId={householdId} initialStaples={staples || []} />
     </div>
   )
 }
