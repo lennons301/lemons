@@ -61,9 +61,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result)
   } catch (error: any) {
     console.error('Recipe extraction failed:', error)
+
+    // Surface useful detail so we can diagnose production issues
+    let detail = error?.message || String(error)
+    let status = 422
+
+    // Anthropic SDK errors carry a status code
+    if (error?.status) {
+      status = error.status === 401 ? 401 : 422
+      if (error.status === 401) {
+        detail = 'Invalid or missing Anthropic API key'
+      } else if (error.status === 429) {
+        detail = 'Anthropic rate limit exceeded — please try again shortly'
+      } else if (error.status === 529) {
+        detail = 'Anthropic API is temporarily overloaded — please try again shortly'
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Failed to extract recipe from image. Please try again or enter manually.' },
-      { status: 422 }
+      { error: `Recipe extraction failed: ${detail}` },
+      { status }
     )
   }
 }
