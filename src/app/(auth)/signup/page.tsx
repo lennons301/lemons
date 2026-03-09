@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,8 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteCode = searchParams.get('invite')
   const supabase = createClient()
 
   async function handleSignup(e: React.FormEvent) {
@@ -23,12 +25,17 @@ export default function SignupPage() {
     setLoading(true)
     setError(null)
 
+    // Preserve invite code through the auth callback flow
+    const callbackUrl = inviteCode
+      ? `${window.location.origin}/auth/callback?next=/invite/${inviteCode}`
+      : `${window.location.origin}/auth/callback`
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { display_name: displayName },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callbackUrl,
       },
     })
 
@@ -38,7 +45,8 @@ export default function SignupPage() {
       return
     }
 
-    router.push('/')
+    // After signup, redirect to invite page if we have a code
+    router.push(inviteCode ? `/invite/${inviteCode}` : '/')
     router.refresh()
   }
 

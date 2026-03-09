@@ -56,5 +56,19 @@ export async function POST(request: Request) {
     .update({ accepted_at: new Date().toISOString() })
     .eq('id', invite.id)
 
+  // Set as default household if user doesn't have one yet
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('default_household_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.default_household_id) {
+    await supabase
+      .from('profiles')
+      .update({ default_household_id: invite.household_id })
+      .eq('id', user.id)
+  }
+
   return NextResponse.json({ ok: true })
 }
