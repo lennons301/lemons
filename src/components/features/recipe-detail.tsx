@@ -22,6 +22,8 @@ interface RecipeDetailProps {
     cook_time: number | null
     instructions: string[]
     source_url: string | null
+    source_author: string | null
+    source_book: string | null
     recipe_ingredients: {
       id: string
       recipe_id: string
@@ -232,18 +234,48 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
         </CardContent>
       </Card>
 
-      {recipe.source_url && (
-        <p className="text-muted-foreground text-sm">
-          Source:{' '}
-          <a
-            href={recipe.source_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            {recipe.source_url}
-          </a>
-        </p>
+      {(recipe.source_book || recipe.source_author || recipe.source_url) && (
+        <div className="text-muted-foreground text-sm">
+          {(recipe.source_book || recipe.source_author) && (
+            <p>
+              {recipe.source_book && (
+                <>
+                  From{' '}
+                  <Link
+                    href={`/recipes?book=${encodeURIComponent(recipe.source_book)}`}
+                    className="font-medium italic text-foreground hover:underline"
+                  >
+                    {recipe.source_book}
+                  </Link>
+                </>
+              )}
+              {recipe.source_author && (
+                <>
+                  {recipe.source_book ? ' by ' : 'By '}
+                  <Link
+                    href={`/recipes?author=${encodeURIComponent(recipe.source_author)}`}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    {recipe.source_author}
+                  </Link>
+                </>
+              )}
+            </p>
+          )}
+          {recipe.source_url && (
+            <p className={recipe.source_book || recipe.source_author ? 'mt-1' : ''}>
+              Source:{' '}
+              <a
+                href={recipe.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {recipe.source_url}
+              </a>
+            </p>
+          )}
+        </div>
       )}
 
       {sourceImages.length > 0 && (
