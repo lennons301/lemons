@@ -12,8 +12,10 @@ const SUGGESTED_TAGS = [
   'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
   // Meal type
   'breakfast', 'lunch', 'dinner', 'snack', 'dessert',
+  // Planning
+  'quick', 'weeknight', 'batch-cook', 'freezer-friendly', 'one-pot', 'special-occasion',
   // Other
-  'quick', 'batch-cook', 'kid-friendly', 'healthy', 'comfort-food',
+  'kid-friendly', 'healthy', 'comfort-food',
 ]
 
 interface TagInputProps {
