@@ -8,9 +8,9 @@ import { RecipeSearch } from '@/components/features/recipe-search'
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; tag?: string }>
+  searchParams: Promise<{ search?: string; tag?: string; author?: string; book?: string }>
 }) {
-  const { search, tag } = await searchParams
+  const { search, tag, author, book } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -49,6 +49,16 @@ export default async function RecipesPage({
       r.recipe_tags?.some((t: any) => t.tag_name === tag)
     )
   }
+  if (author) {
+    filteredRecipes = filteredRecipes.filter((r: any) =>
+      r.source_author?.toLowerCase() === author.toLowerCase()
+    )
+  }
+  if (book) {
+    filteredRecipes = filteredRecipes.filter((r: any) =>
+      r.source_book?.toLowerCase() === book.toLowerCase()
+    )
+  }
 
   // Collect all unique tags for the filter
   const allTags = Array.from(
@@ -76,10 +86,10 @@ export default async function RecipesPage({
       {filteredRecipes.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted-foreground text-lg">
-            {search || tag ? 'No recipes match your search.' : 'No recipes yet.'}
+            {search || tag || author || book ? 'No recipes match your search.' : 'No recipes yet.'}
           </p>
           <p className="text-muted-foreground mt-1 text-sm">
-            {!search && !tag && 'Add your first recipe to get started.'}
+            {!search && !tag && !author && !book && 'Add your first recipe to get started.'}
           </p>
         </div>
       ) : (
