@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { IngredientInput, type IngredientRow } from '@/components/features/ingredient-input'
 import { TagInput } from '@/components/features/tag-input'
+import { MemberPicker, type Person } from '@/components/features/member-picker'
 
 interface RecipeFormProps {
   householdId: string
+  persons?: Person[]
   initialData?: {
     id: string
     title: string
@@ -27,10 +29,11 @@ interface RecipeFormProps {
     source_book: string | null
     recipe_ingredients: IngredientRow[]
     recipe_tags: { tag_name: string }[]
+    recipe_members?: { person_id: string }[]
   }
 }
 
-export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
+export function RecipeForm({ householdId, persons = [], initialData }: RecipeFormProps) {
   const router = useRouter()
   const isEditing = !!initialData
 
@@ -50,6 +53,9 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
   )
   const [tags, setTags] = useState<string[]>(
     initialData?.recipe_tags?.map((t) => t.tag_name) || []
+  )
+  const [selectedMembers, setSelectedMembers] = useState<string[]>(
+    initialData?.recipe_members?.map((m) => m.person_id) || []
   )
   const [saving, setSaving] = useState(false)
   const [extracting, setExtracting] = useState(false)
@@ -84,6 +90,7 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
         sort_order: idx,
       })),
       tags,
+      members: selectedMembers,
     }
 
     const url = isEditing ? `/api/recipes/${initialData.id}` : '/api/recipes'
@@ -441,6 +448,22 @@ export function RecipeForm({ householdId, initialData }: RecipeFormProps) {
           <TagInput tags={tags} onChange={setTags} />
         </CardContent>
       </Card>
+
+      {/* Suitable For */}
+      {persons.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Suitable For</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MemberPicker
+              persons={persons}
+              selected={selectedMembers}
+              onChange={setSelectedMembers}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <Separator />
 
