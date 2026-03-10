@@ -106,112 +106,114 @@ export function AddMealDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85dvh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-0">
-          <DialogTitle>
-            {editingEntry ? 'Edit Meal' : 'Add Meal'} — {mealType} on {date}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[85dvh] overflow-hidden !gap-0 !p-0">
+        <div className="flex flex-col max-h-[85dvh]">
+          <div className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6">
+            <DialogTitle>
+              {editingEntry ? 'Edit Meal' : 'Add Meal'} — {mealType} on {date}
+            </DialogTitle>
+          </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-2">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'recipe' | 'custom')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="recipe">From Recipe</TabsTrigger>
-              <TabsTrigger value="custom">Custom</TabsTrigger>
-            </TabsList>
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 min-h-0">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as 'recipe' | 'custom')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="recipe">From Recipe</TabsTrigger>
+                <TabsTrigger value="custom">Custom</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="recipe" className="space-y-3">
-              <Input
-                placeholder="Search recipes..."
-                value={recipeSearch}
-                onChange={(e) => setRecipeSearch(e.target.value)}
-              />
-              <div className="max-h-36 overflow-y-auto space-y-1">
-                {loadingRecipes && <p className="text-sm text-muted-foreground p-2">Loading...</p>}
-                {!loadingRecipes && recipes.length === 0 && (
-                  <p className="text-sm text-muted-foreground p-2">No recipes found</p>
-                )}
-                {recipes.map((recipe) => (
-                  <button
-                    key={recipe.id}
-                    type="button"
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                      selectedRecipeId === recipe.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted'
-                    }`}
-                    onClick={() => {
-                      setSelectedRecipeId(recipe.id)
-                      setServings(recipe.servings || 2)
-                    }}
-                  >
-                    {recipe.title}
-                  </button>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="custom" className="space-y-3">
-              <div>
-                <Label htmlFor="custom-name">Meal Name</Label>
+              <TabsContent value="recipe" className="space-y-3">
                 <Input
-                  id="custom-name"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="e.g. Leftovers, Eating out"
+                  placeholder="Search recipes..."
+                  value={recipeSearch}
+                  onChange={(e) => setRecipeSearch(e.target.value)}
                 />
-              </div>
-            </TabsContent>
-          </Tabs>
+                <div className="max-h-32 sm:max-h-36 overflow-y-auto space-y-1">
+                  {loadingRecipes && <p className="text-sm text-muted-foreground p-2">Loading...</p>}
+                  {!loadingRecipes && recipes.length === 0 && (
+                    <p className="text-sm text-muted-foreground p-2">No recipes found</p>
+                  )}
+                  {recipes.map((recipe) => (
+                    <button
+                      key={recipe.id}
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        selectedRecipeId === recipe.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted'
+                      }`}
+                      onClick={() => {
+                        setSelectedRecipeId(recipe.id)
+                        setServings(recipe.servings || 2)
+                      }}
+                    >
+                      {recipe.title}
+                    </button>
+                  ))}
+                </div>
+              </TabsContent>
 
-          <div className="space-y-3 pt-2">
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Label htmlFor="servings">Servings</Label>
-                <Input
-                  id="servings"
-                  type="number"
-                  min={1}
-                  value={servings}
-                  onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-                />
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="notes">Notes</Label>
-                <Input
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Optional"
-                />
-              </div>
-            </div>
+              <TabsContent value="custom" className="space-y-3">
+                <div>
+                  <Label htmlFor="custom-name">Meal Name</Label>
+                  <Input
+                    id="custom-name"
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    placeholder="e.g. Leftovers, Eating out"
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
 
-            {persons.length > 0 && (
-              <div>
-                <Label>Assign to</Label>
-                <p className="text-xs text-muted-foreground mb-1">
-                  Leave empty for whole household
-                </p>
-                <div className="max-h-32 overflow-y-auto">
-                  <MemberPicker
-                    persons={persons}
-                    selected={assignedTo}
-                    onChange={setAssignedTo}
+            <div className="space-y-3 pt-3">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <Label htmlFor="servings">Servings</Label>
+                  <Input
+                    id="servings"
+                    type="number"
+                    min={1}
+                    value={servings}
+                    onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Input
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Optional"
                   />
                 </div>
               </div>
-            )}
+
+              {persons.length > 0 && (
+                <div>
+                  <Label>Assign to</Label>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Leave empty for whole household
+                  </p>
+                  <div className="max-h-28 overflow-y-auto">
+                    <MemberPicker
+                      persons={persons}
+                      selected={assignedTo}
+                      onChange={setAssignedTo}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={!canSave || saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editingEntry ? 'Save' : 'Add'}
+            </Button>
           </div>
         </div>
-
-        <DialogFooter className="px-6 pb-6 pt-2 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!canSave || saving}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {editingEntry ? 'Save' : 'Add'}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
