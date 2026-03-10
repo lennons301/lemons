@@ -32,7 +32,7 @@ export async function POST(
     .eq('list_id', listId)
     .order('sort_order', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   const nextSortOrder = maxRow ? maxRow.sort_order + 1 : 0
 

@@ -66,15 +66,15 @@ export function TodoListView({ lists: initialLists, householdId, persons }: Todo
   const handleFilterChange = (f: FilterType) => {
     setFilter(f)
     if (f === 'archived') {
-      // Fetch archived lists
       fetch(`/api/todos?householdId=${householdId}&archived=true`)
         .then((res) => res.json())
         .then((data) => setLists(data))
+        .catch(() => {})
     } else if (filter === 'archived') {
-      // Switching back from archived, restore initial
       fetch(`/api/todos?householdId=${householdId}`)
         .then((res) => res.json())
         .then((data) => setLists(data))
+        .catch(() => setLists(initialLists))
     }
   }
 

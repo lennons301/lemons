@@ -51,7 +51,10 @@ export async function PUT(
   const body = await request.json()
   const updates: Record<string, unknown> = {}
 
-  if ('title' in body) updates.title = body.title?.trim()
+  if ('title' in body) {
+    if (!body.title?.trim()) return NextResponse.json({ error: 'title cannot be empty' }, { status: 400 })
+    updates.title = body.title.trim()
+  }
   if ('color' in body) {
     if (body.color && !AMALFI_HEX_SET.has(body.color)) {
       return NextResponse.json({ error: 'Invalid color' }, { status: 400 })
