@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowLeft, Plus, Trash2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { AddToInventoryButton } from '@/components/features/inventory/add-to-inventory-button'
 
 interface ShoppingItem {
   id: string
@@ -23,9 +24,10 @@ interface ShoppingListDetailProps {
     title: string
     todo_items: ShoppingItem[]
   }
+  householdId: string
 }
 
-export function ShoppingListDetail({ list: initialList }: ShoppingListDetailProps) {
+export function ShoppingListDetail({ list: initialList, householdId }: ShoppingListDetailProps) {
   const router = useRouter()
   const [items, setItems] = useState<ShoppingItem[]>(initialList.todo_items || [])
   const [newItemTitle, setNewItemTitle] = useState('')
@@ -173,6 +175,8 @@ export function ShoppingListDetail({ list: initialList }: ShoppingListDetailProp
           </div>
         </div>
       )}
+
+      <AddToInventoryButton items={items} householdId={householdId} />
     </div>
   )
 }
