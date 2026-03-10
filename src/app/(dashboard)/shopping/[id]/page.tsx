@@ -25,5 +25,5 @@ export default async function ShoppingDetailPage({
 
   if (error || !list) notFound()
 
-  return <ShoppingListDetail list={list as any} />
+  return <ShoppingListDetail list={list as any} householdId={list.household_id} />
 }
