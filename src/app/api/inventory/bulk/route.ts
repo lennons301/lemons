@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
   const dedupedItems = Array.from(deduped.values())
 
   // Call transactional RPC function
-  const { data, error } = await supabase.rpc('inventory_bulk_transfer', {
+  // Cast needed: RPC not yet in generated Supabase types
+  const { data, error } = await (supabase.rpc as any)('inventory_bulk_transfer', {
     p_household_id: household_id,
     p_created_by: user.id,
     p_items: dedupedItems,

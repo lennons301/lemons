@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const householdId = new URL(request.url).searchParams.get('householdId')
   if (!householdId) return NextResponse.json({ error: 'householdId is required' }, { status: 400 })
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('inventory_items')
     .select('*')
     .eq('household_id', householdId)
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   const name = normalizeName(display_name)
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('inventory_items')
     .insert({
       household_id,
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Upsert inventory default for this item
-  await supabase
+  await (supabase as any)
     .from('inventory_defaults')
     .upsert(
       { household_id, normalized_name: name, location, category: category ?? null },

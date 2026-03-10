@@ -20,7 +20,7 @@ export async function PUT(
 
   const name = normalizeName(display_name)
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('inventory_items')
     .update({
       name,
@@ -42,7 +42,7 @@ export async function PUT(
   }
 
   // Upsert inventory default
-  await supabase
+  await (supabase as any)
     .from('inventory_defaults')
     .upsert(
       { household_id: data.household_id, normalized_name: name, location, category: category ?? null },
@@ -73,7 +73,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'No fields to update (PATCH supports quantity and unit only)' }, { status: 400 })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('inventory_items')
     .update(updates)
     .eq('id', id)
@@ -97,7 +97,7 @@ export async function DELETE(
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { error } = await supabase.from('inventory_items').delete().eq('id', id)
+  const { error } = await (supabase as any).from('inventory_items').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
