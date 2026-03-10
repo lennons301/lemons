@@ -19,7 +19,7 @@ export interface InventoryDefault {
   id: string
   household_id: string
   normalized_name: string
-  location: string
+  location: InventoryItem['location']
   category: string | null
 }
 

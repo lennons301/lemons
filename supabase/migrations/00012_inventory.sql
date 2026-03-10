@@ -74,6 +74,7 @@ create or replace function public.inventory_bulk_transfer(
 ) returns jsonb
 language plpgsql
 security definer
+set search_path = public
 as $$
 declare
   item jsonb;

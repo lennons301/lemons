@@ -49,7 +49,7 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
   // Ordered section keys
   const sectionKeys = groupBy === 'location'
     ? INVENTORY_LOCATIONS.map((l) => l.value).filter((k) => grouped[k]?.length)
-    : [...INVENTORY_CATEGORIES, 'other' as const].filter((k) => grouped[k as string]?.length).map(String)
+    : [...INVENTORY_CATEGORIES].filter((k) => grouped[k as string]?.length).map(String)
 
   const getSectionLabel = (key: string) => {
     if (groupBy === 'location') {
@@ -60,13 +60,19 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
   }
 
   const handleQuantityChange = async (id: string, newQuantity: number) => {
-    // Optimistic update
+    // Optimistic update with rollback on failure
+    const previousItems = items
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: newQuantity } : i)))
-    await fetch(`/api/inventory/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: newQuantity }),
-    })
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity }),
+      })
+      if (!res.ok) setItems(previousItems)
+    } catch {
+      setItems(previousItems)
+    }
   }
 
   const handleSave = async (data: {
