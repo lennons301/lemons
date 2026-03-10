@@ -11,7 +11,8 @@ export async function POST(
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Verify list exists and is not shopping
-  const { data: list } = await supabase
+  // Cast needed: default_assigned_to not in generated Supabase types yet
+  const { data: list } = await (supabase as any)
     .from('todo_lists')
     .select('id, list_type, default_assigned_to')
     .eq('id', listId)
