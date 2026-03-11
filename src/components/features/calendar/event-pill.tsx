@@ -12,7 +12,7 @@ interface EventPillProps {
 
 export function EventPill({ event, onClick, isMultiDaySegment }: EventPillProps) {
   const color = CATEGORY_COLORS[event.category]
-  const timePrefix = !event.all_day ? `${formatTime(event.start_time)} ` : ''
+  const timePrefix = !event.all_day ? `${formatTime(new Date(event.start_datetime))} ` : ''
 
   return (
     <button
