@@ -82,14 +82,16 @@ export default async function RecipesPage({
     }
   }
 
-  // Collect all unique tags for the filter
-  const allTags = Array.from(
-    new Set(
-      (recipes || []).flatMap((r: any) =>
-        r.recipe_tags?.map((t: any) => t.tag_name) || []
-      )
-    )
-  ).sort()
+  // Collect tags with counts for the filter, sorted by frequency
+  const tagCountMap = new Map<string, number>()
+  for (const r of recipes || []) {
+    for (const t of r.recipe_tags || []) {
+      tagCountMap.set(t.tag_name, (tagCountMap.get(t.tag_name) || 0) + 1)
+    }
+  }
+  const tagCounts = Array.from(tagCountMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }))
 
   return (
     <div className="space-y-6">
@@ -104,7 +106,7 @@ export default async function RecipesPage({
       </div>
 
       <RecipeSearch
-        allTags={allTags}
+        tagCounts={tagCounts}
         activeTag={tag || null}
         persons={persons || []}
         activeMember={member || null}
@@ -120,7 +122,7 @@ export default async function RecipesPage({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           {filteredRecipes.map((recipe: any) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
