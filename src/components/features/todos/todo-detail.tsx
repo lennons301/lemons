@@ -1,7 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -46,6 +62,50 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
     : null
   const typeLabel = list.list_type.charAt(0).toUpperCase() + list.list_type.slice(1)
   const progress = `${completedItems.length}/${items.length} done`
+
+  // DnD sensors — pointer for desktop, touch for mobile
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      const oldIndex = pendingItems.findIndex((i) => i.id === active.id)
+      const newIndex = pendingItems.findIndex((i) => i.id === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      // Reorder pending items
+      const reordered = [...pendingItems]
+      const [moved] = reordered.splice(oldIndex, 1)
+      reordered.splice(newIndex, 0, moved)
+
+      // Assign new sort_order values
+      const updatedPending = reordered.map((item, idx) => ({ ...item, sort_order: idx }))
+      // Keep completed items after pending, preserving their relative order
+      const updatedCompleted = completedItems.map((item, idx) => ({
+        ...item,
+        sort_order: updatedPending.length + idx,
+      }))
+
+      const allUpdated = [...updatedPending, ...updatedCompleted]
+      setItems(allUpdated)
+
+      // Persist the reorder
+      fetch(`/api/todos/${list.id}/items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: updatedPending.map((i) => ({ id: i.id, sort_order: i.sort_order })),
+        }),
+      })
+    },
+    [pendingItems, completedItems, list.id]
+  )
 
   // Quick add
   const handleQuickAdd = async () => {
@@ -224,17 +284,29 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
           <p className="text-muted-foreground text-sm py-8 text-center">No tasks yet</p>
         )}
         {pendingItems.length > 0 && (
-          <div className="border rounded-lg overflow-hidden">
-            {pendingItems.map((item) => (
-              <TodoItemRow
-                key={item.id}
-                item={item}
-                persons={persons}
-                onToggle={handleToggle}
-                onClick={(i) => { setEditingItem(i); setEditDialogOpen(true) }}
-              />
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <SortableContext
+              items={pendingItems.map((i) => i.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="border rounded-lg overflow-hidden">
+                {pendingItems.map((item) => (
+                  <TodoItemRow
+                    key={item.id}
+                    item={item}
+                    persons={persons}
+                    onToggle={handleToggle}
+                    onClick={(i) => { setEditingItem(i); setEditDialogOpen(true) }}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

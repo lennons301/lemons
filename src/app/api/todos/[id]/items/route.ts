@@ -1,6 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+// Batch reorder items
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: listId } = await params
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: list } = await supabase
+    .from('todo_lists')
+    .select('id, list_type')
+    .eq('id', listId)
+    .neq('list_type', 'shopping')
+    .single()
+  if (!list) return NextResponse.json({ error: 'List not found' }, { status: 404 })
+
+  const body = await request.json()
+  const items: { id: string; sort_order: number }[] = body.items
+  if (!Array.isArray(items)) {
+    return NextResponse.json({ error: 'items array is required' }, { status: 400 })
+  }
+
+  // Update each item's sort_order
+  const updates = items.map(({ id, sort_order }) =>
+    supabase
+      .from('todo_items')
+      .update({ sort_order })
+      .eq('id', id)
+      .eq('list_id', listId)
+  )
+  await Promise.all(updates)
+
+  return NextResponse.json({ success: true })
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
