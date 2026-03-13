@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { AMALFI_HEX_SET } from '@/types/todos'
+import { getListStats } from '@/lib/utils/list-stats'
 
 const VALID_LIST_TYPES = new Set(['general', 'checklist', 'project'])
 
@@ -37,18 +38,11 @@ export async function GET(request: NextRequest) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const lists = (data || []).map((list: any) => {
-    const items = list.todo_items || []
-    return {
-      ...list,
-      todo_items: undefined,
-      total_items: items.length,
-      completed_items: items.filter((i: any) => i.status === 'completed').length,
-      overdue_count: items.filter((i: any) => i.due_date && i.due_date < today && i.status !== 'completed').length,
-      high_priority_count: items.filter((i: any) => (i.priority === 'high' || i.priority === 'urgent') && i.status !== 'completed').length,
-      due_today_count: items.filter((i: any) => i.due_date === today && i.status !== 'completed').length,
-    }
-  })
+  const lists = (data || []).map((list) => ({
+    ...list,
+    todo_items: undefined,
+    ...getListStats(list.todo_items || [], today),
+  }))
 
   return NextResponse.json(lists)
 }

@@ -4,12 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
 import { getAgeCategory } from '@/lib/utils/age-category'
 
-export interface Person {
-  id: string
-  display_name: string | null
-  date_of_birth: string | null
-  person_type: string
-}
+export type { Person } from '@/types/person'
+import type { Person } from '@/types/person'
 
 interface MemberPickerProps {
   persons: Person[]
@@ -34,7 +30,7 @@ export function MemberPicker({ persons, selected, onChange }: MemberPickerProps)
       <div className="space-y-1">
         {persons.map((person) => {
           const isSelected = selected.includes(person.id)
-          const ageCategory = getAgeCategory(person.date_of_birth)
+          const ageCategory = getAgeCategory(person.date_of_birth ?? null)
           return (
             <button
               key={person.id}

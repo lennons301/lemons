@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart, Plus } from 'lucide-react'
 import { GenerateDialog } from './generate-dialog'
@@ -36,6 +37,8 @@ export function ShoppingListView({ householdId, lists: initialLists }: ShoppingL
       const list = await res.json()
       router.push(`/shopping/${list.id}`)
       router.refresh()
+    } else {
+      toast.error('Failed to create shopping list')
     }
   }
 

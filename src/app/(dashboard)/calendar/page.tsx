@@ -1,26 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
 import { CalendarView } from '@/components/features/calendar/calendar-view'
 import { getMonthRange } from '@/lib/utils/calendar'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function CalendarPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
-
-  const householdId = profile?.default_household_id
-  if (!householdId) return null
+  const { supabase, householdId } = await getPageContext()
 
   // Fetch current month's events
   const now = new Date()
   const { start, end } = getMonthRange(now.getFullYear(), now.getMonth())
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('calendar_events')
     .select('*')
     .eq('household_id', householdId)

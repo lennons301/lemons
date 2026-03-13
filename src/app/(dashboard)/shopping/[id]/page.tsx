@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { ShoppingListDetail } from '@/components/features/shopping/shopping-list-detail'
 import { notFound } from 'next/navigation'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function ShoppingDetailPage({
   params,
@@ -8,9 +8,7 @@ export default async function ShoppingDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const { supabase } = await getPageContext()
 
   const { data: list, error } = await supabase
     .from('todo_lists')

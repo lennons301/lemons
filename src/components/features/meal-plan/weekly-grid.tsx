@@ -7,13 +7,7 @@ import { MealCell } from './meal-cell'
 import { AddMealDialog } from './add-meal-dialog'
 import { CopyWeekDialog } from './copy-week-dialog'
 import { getWeekStart, getWeekDays, formatWeekLabel, shiftWeek, MEAL_TYPES, type MealType } from '@/lib/utils/week'
-
-interface Person {
-  id: string
-  display_name: string | null
-  date_of_birth: string | null
-  person_type: string
-}
+import type { Person } from '@/types/person'
 
 interface WeeklyGridProps {
   householdId: string

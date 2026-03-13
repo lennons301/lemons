@@ -1,19 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
 import { ShoppingListView } from '@/components/features/shopping/shopping-list-view'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function ShoppingPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
-
-  const householdId = profile?.default_household_id
-  if (!householdId) return null
+  const { supabase, householdId } = await getPageContext()
 
   const { data: lists } = await supabase
     .from('todo_lists')
@@ -29,7 +18,7 @@ export default async function ShoppingPage() {
   const shoppingLists = (lists || []).map((list) => ({
     ...list,
     total_items: list.todo_items?.length || 0,
-    completed_items: list.todo_items?.filter((i: any) => i.status === 'completed').length || 0,
+    completed_items: list.todo_items?.filter((i) => i.status === 'completed').length || 0,
   }))
 
   return (

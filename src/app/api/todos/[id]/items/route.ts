@@ -49,7 +49,7 @@ export async function POST(
 
   // Verify list exists and is not shopping
   // Cast needed: default_assigned_to not in generated Supabase types yet
-  const { data: list } = await (supabase as any)
+  const { data: list } = await supabase
     .from('todo_lists')
     .select('id, list_type, default_assigned_to')
     .eq('id', listId)

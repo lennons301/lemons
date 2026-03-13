@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import { RecipeCard } from '@/components/features/recipe-card'
-import { RecipeSearch } from '@/components/features/recipe-search'
+import { RecipeCard } from '@/components/features/recipes/recipe-card'
+import { RecipeSearch } from '@/components/features/recipes/recipe-search'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function RecipesPage({
   searchParams,
@@ -11,20 +11,7 @@ export default async function RecipesPage({
   searchParams: Promise<{ search?: string; tag?: string; author?: string; book?: string; member?: string }>
 }) {
   const { search, tag, author, book, member } = await searchParams
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) return null
-
-  // Get user's default household
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
-
-  const householdId = profile?.default_household_id
-  if (!householdId) return null
+  const { supabase, householdId } = await getPageContext()
 
   // Fetch household persons for member filter
   const { data: persons } = await supabase
@@ -52,32 +39,32 @@ export default async function RecipesPage({
 
   let filteredRecipes = recipes || []
   if (tag) {
-    filteredRecipes = filteredRecipes.filter((r: any) =>
-      r.recipe_tags?.some((t: any) => t.tag_name === tag)
+    filteredRecipes = filteredRecipes.filter((r) =>
+      r.recipe_tags?.some((t) => t.tag_name === tag)
     )
   }
   if (author) {
-    filteredRecipes = filteredRecipes.filter((r: any) =>
+    filteredRecipes = filteredRecipes.filter((r) =>
       r.source_author?.toLowerCase() === author.toLowerCase()
     )
   }
   if (book) {
-    filteredRecipes = filteredRecipes.filter((r: any) =>
+    filteredRecipes = filteredRecipes.filter((r) =>
       r.source_book?.toLowerCase() === book.toLowerCase()
     )
   }
   if (member) {
     if (member === 'everyone') {
       // Recipes where ALL household persons are tagged
-      const personIds = (persons || []).map((p: any) => p.id)
-      filteredRecipes = filteredRecipes.filter((r: any) =>
+      const personIds = (persons || []).map((p) => p.id)
+      filteredRecipes = filteredRecipes.filter((r) =>
         personIds.every((pid: string) =>
-          r.recipe_members?.some((rm: any) => rm.person_id === pid)
+          r.recipe_members?.some((rm) => rm.person_id === pid)
         )
       )
     } else {
-      filteredRecipes = filteredRecipes.filter((r: any) =>
-        r.recipe_members?.some((rm: any) => rm.person_id === member)
+      filteredRecipes = filteredRecipes.filter((r) =>
+        r.recipe_members?.some((rm) => rm.person_id === member)
       )
     }
   }
@@ -123,7 +110,7 @@ export default async function RecipesPage({
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-          {filteredRecipes.map((recipe: any) => (
+          {filteredRecipes.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>

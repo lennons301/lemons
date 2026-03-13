@@ -21,11 +21,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import { AMALFI_COLORS, TODO_LIST_TYPES } from '@/types/todos'
 import type { TodoList, TodoListType } from '@/types/todos'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface TodoListDialogProps {
   open: boolean

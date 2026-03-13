@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -43,11 +44,15 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
     setItems((prev) =>
       prev.map((i) => (i.id === item.id ? { ...i, status: newStatus } : i))
     )
-    await fetch(`/api/shopping/lists/${initialList.id}/items/${item.id}`, {
+    const res = await fetch(`/api/shopping/lists/${initialList.id}/items/${item.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
     })
+    if (!res.ok) {
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, status: item.status } : i)))
+      toast.error('Failed to update item')
+    }
   }
 
   const addItem = async () => {
@@ -66,6 +71,8 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
         const data = await res.json()
         setItems((prev) => [...prev, ...(Array.isArray(data) ? data : [data])])
         setNewItemTitle('')
+      } else {
+        toast.error('Failed to add item')
       }
     } finally {
       setAdding(false)
@@ -88,6 +95,7 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
       router.refresh()
     } else {
       setDeleting(false)
+      toast.error('Failed to delete list')
     }
   }
 

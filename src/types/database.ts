@@ -467,12 +467,14 @@ export type Database = {
           id: string
           household_id: string
           title: string
-          list_type: string
+          list_type: 'general' | 'shopping' | 'checklist' | 'project'
           created_by: string
           color: string | null
           pinned: boolean
           archived: boolean
+          default_assigned_to: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -483,7 +485,9 @@ export type Database = {
           color?: string | null
           pinned?: boolean
           archived?: boolean
+          default_assigned_to?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -494,7 +498,9 @@ export type Database = {
           color?: string | null
           pinned?: boolean
           archived?: boolean
+          default_assigned_to?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -519,8 +525,8 @@ export type Database = {
           list_id: string
           title: string
           description: string | null
-          status: string
-          priority: string
+          status: 'pending' | 'in_progress' | 'completed'
+          priority: 'none' | 'low' | 'medium' | 'high' | 'urgent'
           due_date: string | null
           assigned_to: string | null
           created_by: string
@@ -633,6 +639,170 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          id: string
+          household_id: string
+          created_by: string
+          name: string
+          display_name: string
+          quantity: number | null
+          unit: string | null
+          location: 'fridge' | 'freezer' | 'pantry' | 'cupboard' | 'other'
+          category: string | null
+          expiry_date: string | null
+          added_from: 'manual' | 'shopping_list'
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          created_by: string
+          name: string
+          display_name: string
+          quantity?: number | null
+          unit?: string | null
+          location: string
+          category?: string | null
+          expiry_date?: string | null
+          added_from?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          created_by?: string
+          name?: string
+          display_name?: string
+          quantity?: number | null
+          unit?: string | null
+          location?: string
+          category?: string | null
+          expiry_date?: string | null
+          added_from?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_defaults: {
+        Row: {
+          id: string
+          household_id: string
+          normalized_name: string
+          location: string
+          category: string | null
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          normalized_name: string
+          location: string
+          category?: string | null
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          normalized_name?: string
+          location?: string
+          category?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_defaults_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          id: string
+          household_id: string
+          title: string
+          description: string | null
+          start_datetime: string
+          end_datetime: string
+          all_day: boolean
+          location: string | null
+          assigned_to: string[]
+          created_by: string
+          category: 'chore' | 'appointment' | 'birthday' | 'holiday' | 'social' | 'custom'
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          title: string
+          description?: string | null
+          start_datetime: string
+          end_datetime: string
+          all_day?: boolean
+          location?: string | null
+          assigned_to?: string[]
+          created_by: string
+          category: string
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          title?: string
+          description?: string | null
+          start_datetime?: string
+          end_datetime?: string
+          all_day?: boolean
+          location?: string | null
+          assigned_to?: string[]
+          created_by?: string
+          category?: string
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           id: string
@@ -643,6 +813,8 @@ export type Database = {
           cook_time: number | null
           instructions: Json
           source_url: string | null
+          source_author: string | null
+          source_book: string | null
           household_id: string
           created_by: string
           created_at: string
@@ -657,6 +829,8 @@ export type Database = {
           cook_time?: number | null
           instructions?: Json
           source_url?: string | null
+          source_author?: string | null
+          source_book?: string | null
           household_id: string
           created_by: string
           created_at?: string
@@ -671,6 +845,8 @@ export type Database = {
           cook_time?: number | null
           instructions?: Json
           source_url?: string | null
+          source_author?: string | null
+          source_book?: string | null
           household_id?: string
           created_by?: string
           created_at?: string

@@ -10,7 +10,7 @@ export interface CalendarEvent {
   assigned_to: string[]
   created_by: string
   category: EventCategory
-  metadata: Record<string, unknown> | null
+  metadata: unknown
   created_at: string
   updated_at: string
 }

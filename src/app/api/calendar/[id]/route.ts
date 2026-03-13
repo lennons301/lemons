@@ -37,7 +37,7 @@ export async function PUT(
     }
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('calendar_events')
     .update(updates)
     .eq('id', id)
@@ -60,7 +60,7 @@ export async function DELETE(
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { error } = await (supabase as any).from('calendar_events').delete().eq('id', id)
+  const { error } = await supabase.from('calendar_events').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }

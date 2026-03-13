@@ -8,11 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
 import { PRIORITY_COLORS } from '@/types/todos'
 import type { TodoItem } from '@/types/todos'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface TodoItemRowProps {
   item: TodoItem

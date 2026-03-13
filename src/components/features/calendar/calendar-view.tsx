@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { MonthGrid } from './month-grid'
@@ -15,11 +16,7 @@ import {
   getWeekRange,
 } from '@/lib/utils/calendar'
 import type { CalendarEvent, EventCategory } from '@/types/calendar'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface CalendarViewProps {
   initialEvents: CalendarEvent[]
@@ -175,6 +172,8 @@ export function CalendarView({
       if (res.ok) {
         const updated = await res.json()
         setEvents((prev) => prev.map((e) => (e.id === editingEvent.id ? updated : e)))
+      } else {
+        toast.error('Failed to save event')
       }
     } else {
       const res = await fetch('/api/calendar', {
@@ -185,6 +184,8 @@ export function CalendarView({
       if (res.ok) {
         const created = await res.json()
         setEvents((prev) => [...prev, created])
+      } else {
+        toast.error('Failed to create event')
       }
     }
   }
@@ -193,6 +194,8 @@ export function CalendarView({
     const res = await fetch(`/api/calendar/${id}`, { method: 'DELETE' })
     if (res.ok) {
       setEvents((prev) => prev.filter((e) => e.id !== id))
+    } else {
+      toast.error('Failed to delete event')
     }
   }
 

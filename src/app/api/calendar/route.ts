@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Range overlap query: events where [start_datetime, end_datetime) overlaps [start, end)
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('calendar_events')
     .select('*')
     .eq('household_id', householdId)
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'end_datetime must be after start_datetime' }, { status: 400 })
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('calendar_events')
     .insert({
       household_id,

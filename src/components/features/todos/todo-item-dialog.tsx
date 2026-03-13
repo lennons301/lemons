@@ -22,11 +22,7 @@ import {
 import { Loader2, Trash2 } from 'lucide-react'
 import { PRIORITIES } from '@/types/todos'
 import type { TodoItem, TodoPriority } from '@/types/todos'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface TodoItemDialogProps {
   open: boolean

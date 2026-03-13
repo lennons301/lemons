@@ -23,11 +23,7 @@ import {
 import { Loader2, Trash2 } from 'lucide-react'
 import { EVENT_CATEGORIES, CATEGORY_COLORS } from '@/types/calendar'
 import type { CalendarEvent, EventCategory } from '@/types/calendar'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface EventDialogProps {
   open: boolean

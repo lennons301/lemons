@@ -1,24 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { MemberList } from '@/components/features/member-list'
-import { InviteLinkGenerator } from '@/components/features/invite-link-generator'
-import { ManagedMemberForm } from '@/components/features/managed-member-form'
-import { ApiKeySettings } from '@/components/features/api-key-settings'
-import { StaplesManager } from '@/components/features/staples-manager'
+import { MemberList } from '@/components/features/members/member-list'
+import { InviteLinkGenerator } from '@/components/features/settings/invite-link-generator'
+import { ManagedMemberForm } from '@/components/features/members/managed-member-form'
+import { ApiKeySettings } from '@/components/features/settings/api-key-settings'
+import { StaplesManager } from '@/components/features/settings/staples-manager'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
-
-  const householdId = profile?.default_household_id
-  if (!householdId) redirect('/onboarding')
+  const { supabase, user, householdId } = await getPageContext()
 
   // Fetch household details
   const { data: household } = await supabase

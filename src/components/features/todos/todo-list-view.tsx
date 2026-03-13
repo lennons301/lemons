@@ -2,16 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { TodoListCard } from './todo-list-card'
 import { TodoListDialog } from './todo-list-dialog'
 import type { TodoListWithCounts, TodoListType } from '@/types/todos'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface TodoListViewProps {
   lists: TodoListWithCounts[]
@@ -42,6 +39,8 @@ export function TodoListView({ lists: initialLists, householdId, persons }: Todo
     })
     if (res.ok) {
       setLists((prev) => prev.filter((l) => l.id !== id))
+    } else {
+      toast.error('Failed to unarchive list')
     }
   }
 
@@ -60,6 +59,8 @@ export function TodoListView({ lists: initialLists, householdId, persons }: Todo
       const created = await res.json()
       router.push(`/todos/${created.id}`)
       router.refresh()
+    } else {
+      toast.error('Failed to create list')
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, ChevronDown, Clock, Edit, Minus, Plus, Trash2, Users } from 'lucide-react'
@@ -11,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { scaleIngredients } from '@/lib/utils/scaling'
-import { type Person } from '@/components/features/member-picker'
+import type { Person } from '@/types/person'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
 
 interface RecipeDetailProps {
@@ -65,7 +66,7 @@ export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
       router.refresh()
     } else {
       setDeleting(false)
-      alert('Failed to delete recipe')
+      toast.error('Failed to delete recipe')
     }
   }
 

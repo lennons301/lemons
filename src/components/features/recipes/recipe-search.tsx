@@ -14,7 +14,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
-import { type Person } from '@/components/features/member-picker'
+import type { Person } from '@/types/person'
 
 const MAX_QUICK_TAGS = 5
 

@@ -1,23 +1,11 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { DashboardView } from '@/components/features/dashboard/dashboard-view'
 import { getWeekStart, getWeekRange } from '@/lib/utils/calendar'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const { supabase, user, householdId, profile } = await getPageContext()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id, display_name')
-    .eq('id', user.id)
-    .single()
-
-  const householdId = profile?.default_household_id
-  if (!householdId) redirect('/onboarding')
-
-  const displayName = profile?.display_name || user.email?.split('@')[0] || 'there'
+  const displayName = profile.display_name || user.email?.split('@')[0] || 'there'
 
   // Date computations
   const now = new Date()
@@ -31,7 +19,7 @@ export default async function HomePage() {
   // Fetch all data in parallel
   const [eventsResult, listsResult, mealsResult, inventoryResult] = await Promise.all([
     // Events this week
-    (supabase as any)
+    supabase
       .from('calendar_events')
       .select('*')
       .eq('household_id', householdId)
@@ -55,7 +43,7 @@ export default async function HomePage() {
       .eq('date', today),
 
     // Expiring inventory
-    (supabase as any)
+    supabase
       .from('inventory_items')
       .select('*')
       .eq('household_id', householdId)
@@ -76,8 +64,8 @@ export default async function HomePage() {
   const weekEndDate = weekEndIso.split('T')[0]
 
   const tasks = (listsResult.data || [])
-    .flatMap((list: any) => list.todo_items || [])
-    .filter((item: any) =>
+    .flatMap((list) => list.todo_items || [])
+    .filter((item) =>
       item.status !== 'completed' &&
       item.due_date &&
       item.due_date >= thirtyDaysStr &&

@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { IngredientInput, type IngredientRow } from '@/components/features/ingredient-input'
-import { TagInput } from '@/components/features/tag-input'
-import { MemberPicker, type Person } from '@/components/features/member-picker'
+import { IngredientInput, type IngredientRow } from '@/components/features/recipes/ingredient-input'
+import { TagInput } from '@/components/features/recipes/tag-input'
+import { MemberPicker } from '@/components/features/members/member-picker'
+import type { Person } from '@/types/person'
 
 interface RecipeFormProps {
   householdId: string

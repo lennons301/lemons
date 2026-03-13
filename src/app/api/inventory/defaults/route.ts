@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   const nameList = names.split(',').map((n) => n.trim()).filter(Boolean)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('inventory_defaults')
     .select('*')
     .eq('household_id', householdId)

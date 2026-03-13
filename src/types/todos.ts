@@ -2,7 +2,7 @@ export interface TodoList {
   id: string
   household_id: string
   title: string
-  list_type: 'general' | 'checklist' | 'project'
+  list_type: 'general' | 'shopping' | 'checklist' | 'project'
   color: string | null
   pinned: boolean
   archived: boolean

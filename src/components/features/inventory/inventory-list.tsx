@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Search } from 'lucide-react'
@@ -69,9 +70,13 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quantity: newQuantity }),
       })
-      if (!res.ok) setItems(previousItems)
+      if (!res.ok) {
+        setItems(previousItems)
+        toast.error('Failed to update quantity')
+      }
     } catch {
       setItems(previousItems)
+      toast.error('Failed to update quantity')
     }
   }
 
@@ -94,6 +99,8 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
       if (res.ok) {
         const updated = await res.json()
         setItems((prev) => prev.map((i) => (i.id === editingItem.id ? updated : i)))
+      } else {
+        toast.error('Failed to save item')
       }
     } else {
       // Create new
@@ -105,6 +112,8 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
       if (res.ok) {
         const created = await res.json()
         setItems((prev) => [...prev, created])
+      } else {
+        toast.error('Failed to add item')
       }
     }
   }
@@ -113,6 +122,8 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
     const res = await fetch(`/api/inventory/${id}`, { method: 'DELETE' })
     if (res.ok) {
       setItems((prev) => prev.filter((i) => i.id !== id))
+    } else {
+      toast.error('Failed to delete item')
     }
   }
 
@@ -134,6 +145,8 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
         setItems((prev) => [...prev, created])
         setQuickAddValue('')
         setQuickAddLocation(null)
+      } else {
+        toast.error('Failed to add item')
       }
     } finally {
       setQuickAdding(false)

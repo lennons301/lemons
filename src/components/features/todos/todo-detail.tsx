@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   DndContext,
   closestCenter,
@@ -32,11 +33,7 @@ import { TodoItemRow } from './todo-item-row'
 import { TodoItemDialog } from './todo-item-dialog'
 import { TodoListDialog } from './todo-list-dialog'
 import type { TodoList, TodoItem, TodoPriority, TodoListType } from '@/types/todos'
-
-interface Person {
-  id: string
-  display_name: string | null
-}
+import type { Person } from '@/types/person'
 
 interface TodoDetailProps {
   list: TodoList & { todo_items: TodoItem[] }
@@ -121,6 +118,8 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
         const created = await res.json()
         setItems((prev) => [...prev, created])
         setNewTaskTitle('')
+      } else {
+        toast.error('Failed to add task')
       }
     } finally {
       setAdding(false)
@@ -140,9 +139,13 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       })
-      if (!res.ok) setItems(previousItems)
+      if (!res.ok) {
+        setItems(previousItems)
+        toast.error('Failed to update task')
+      }
     } catch {
       setItems(previousItems)
+      toast.error('Failed to update task')
     }
   }
 
@@ -163,6 +166,8 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
     if (res.ok) {
       const updated = await res.json()
       setItems((prev) => prev.map((i) => (i.id === editingItem.id ? updated : i)))
+    } else {
+      toast.error('Failed to save task')
     }
   }
 
@@ -171,6 +176,8 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
     const res = await fetch(`/api/todos/${list.id}/items/${id}`, { method: 'DELETE' })
     if (res.ok) {
       setItems((prev) => prev.filter((i) => i.id !== id))
+    } else {
+      toast.error('Failed to delete task')
     }
   }
 

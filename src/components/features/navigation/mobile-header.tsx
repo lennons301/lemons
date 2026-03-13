@@ -8,7 +8,7 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { SidebarNav } from '@/components/features/sidebar'
+import { SidebarNav } from '@/components/features/navigation/sidebar'
 
 export function MobileHeader() {
   const [open, setOpen] = useState(false)

@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUserHouseholds } from '@/lib/supabase/queries'
 import { HouseholdProvider } from '@/components/providers/household-provider'
-import { Sidebar } from '@/components/features/sidebar'
-import { MobileHeader } from '@/components/features/mobile-header'
+import { Sidebar } from '@/components/features/navigation/sidebar'
+import { MobileHeader } from '@/components/features/navigation/mobile-header'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

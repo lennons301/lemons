@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { TodoDetail } from '@/components/features/todos/todo-detail'
 import { notFound } from 'next/navigation'
+import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function TodoDetailPage({
   params,
@@ -8,9 +8,7 @@ export default async function TodoDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const { supabase } = await getPageContext()
 
   const { data: list, error } = await supabase
     .from('todo_lists')

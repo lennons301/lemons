@@ -8,15 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MemberPicker } from '@/components/features/member-picker'
+import { MemberPicker } from '@/components/features/members/member-picker'
 import { Loader2 } from 'lucide-react'
-
-interface Person {
-  id: string
-  display_name: string | null
-  date_of_birth: string | null
-  person_type: string
-}
+import type { Person } from '@/types/person'
 
 interface AddMealDialogProps {
   open: boolean

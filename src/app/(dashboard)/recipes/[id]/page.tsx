@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { RecipeDetail } from '@/components/features/recipe-detail'
+import { RecipeDetail } from '@/components/features/recipes/recipe-detail'
+import { getPageContext, getHouseholdPersons } from '@/lib/supabase/queries'
 
 export default async function RecipeDetailPage({
   params,
@@ -8,20 +8,9 @@ export default async function RecipeDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const { supabase, householdId } = await getPageContext()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
-
-  const { data: persons } = await supabase
-    .from('household_persons')
-    .select('id, display_name, date_of_birth, person_type')
-    .eq('household_id', profile?.default_household_id ?? '')
+  const persons = await getHouseholdPersons(supabase, householdId)
 
   const { data: recipe, error } = await supabase
     .from('recipes')
@@ -39,5 +28,5 @@ export default async function RecipeDetailPage({
 
   if (error || !recipe) notFound()
 
-  return <RecipeDetail recipe={recipe as any} persons={persons || []} />
+  return <RecipeDetail recipe={recipe as any} persons={persons} />
 }
