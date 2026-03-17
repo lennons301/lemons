@@ -87,8 +87,25 @@ export function formatTime(date: Date): string {
 /**
  * Check if an event overlaps a specific day.
  * Uses exclusive-end convention: event spans [start, end).
+ *
+ * All-day events are stored as UTC midnight (e.g. 2026-03-17T00:00:00Z).
+ * Comparing them against local-time day boundaries causes off-by-one errors
+ * for users east of UTC. For all-day events we compare date strings directly
+ * to avoid any timezone arithmetic.
  */
-export function eventOverlapsDay(event: { start_datetime: string; end_datetime: string }, day: Date): boolean {
+export function eventOverlapsDay(event: { start_datetime: string; end_datetime: string; all_day?: boolean }, day: Date): boolean {
+  if (event.all_day) {
+    // Compare YYYY-MM-DD strings — timezone independent
+    const startDate = event.start_datetime.slice(0, 10)
+    const endDate = event.end_datetime.slice(0, 10)
+    const y = day.getFullYear()
+    const m = String(day.getMonth() + 1).padStart(2, '0')
+    const d = String(day.getDate()).padStart(2, '0')
+    const dayDate = `${y}-${m}-${d}`
+    return startDate <= dayDate && dayDate < endDate
+  }
+
+  // Timed events: compare using local-time day boundaries
   const dayStart = new Date(day)
   dayStart.setHours(0, 0, 0, 0)
   const dayEnd = new Date(dayStart)
