@@ -15,6 +15,16 @@ export interface CalendarEvent {
   updated_at: string
 }
 
+export interface ListProgress {
+  list_id: string
+  total: number
+  completed: number
+}
+
+export interface CalendarEventWithProgress extends CalendarEvent {
+  list_progress: ListProgress | null
+}
+
 export type EventCategory = 'chore' | 'appointment' | 'birthday' | 'holiday' | 'social' | 'custom'
 
 export const EVENT_CATEGORIES: { value: EventCategory; label: string }[] = [

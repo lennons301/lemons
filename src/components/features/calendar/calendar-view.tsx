@@ -15,11 +15,11 @@ import {
   getMonthRange,
   getWeekRange,
 } from '@/lib/utils/calendar'
-import type { CalendarEvent, EventCategory } from '@/types/calendar'
+import type { CalendarEvent, CalendarEventWithProgress, EventCategory } from '@/types/calendar'
 import type { Person } from '@/types/person'
 
 interface CalendarViewProps {
-  initialEvents: CalendarEvent[]
+  initialEvents: CalendarEventWithProgress[]
   householdId: string
   persons: Person[]
   initialYear: number
@@ -39,7 +39,7 @@ export function CalendarView({
   const [year, setYear] = useState(initialYear)
   const [month, setMonth] = useState(initialMonth)
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
-  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
+  const [events, setEvents] = useState<CalendarEventWithProgress[]>(initialEvents)
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -148,7 +148,7 @@ export function CalendarView({
     setDialogOpen(true)
   }
 
-  const openEditDialog = (event: CalendarEvent) => {
+  const openEditDialog = (event: CalendarEventWithProgress) => {
     setEditingEvent(event)
     setDialogOpen(true)
   }
