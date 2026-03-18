@@ -15,6 +15,7 @@ export default async function TodosPage() {
       .eq('household_id', householdId)
       .neq('list_type', 'shopping')
       .eq('archived', false)
+      .eq('is_template', false)
       .order('created_at', { ascending: false }),
     supabase
       .from('household_persons')
