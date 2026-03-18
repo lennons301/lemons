@@ -123,30 +123,30 @@ export function WeeklyGrid({ householdId, persons }: WeeklyGridProps) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(shiftWeek(weekStart, -1))}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+          <Button variant="outline" size="icon" className="shrink-0" onClick={() => setWeekStart(shiftWeek(weekStart, -1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-semibold min-w-[200px] text-center">
+          <h2 className="text-sm sm:text-lg font-semibold text-center truncate">
             {formatWeekLabel(weekStart)}
           </h2>
-          <Button variant="outline" size="icon" onClick={() => setWeekStart(shiftWeek(weekStart, 1))}>
+          <Button variant="outline" size="icon" className="shrink-0" onClick={() => setWeekStart(shiftWeek(weekStart, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setWeekStart(getWeekStart(new Date()))}
           >
-            <Calendar className="mr-1 h-4 w-4" />
-            Today
+            <Calendar className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Today</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => setCopyDialogOpen(true)}>
-            <Copy className="mr-1 h-4 w-4" />
-            Copy Week
+            <Copy className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Copy Week</span>
           </Button>
         </div>
       </div>
