@@ -4,9 +4,13 @@ import { CATEGORY_COLORS } from '@/types/calendar'
 import { formatTime } from '@/lib/utils/calendar'
 import type { CalendarEvent } from '@/types/calendar'
 
+interface EventWithProgress extends CalendarEvent {
+  list_progress?: { list_id: string; total: number; completed: number } | null
+}
+
 interface EventBlockProps {
-  event: CalendarEvent
-  onClick: (event: CalendarEvent) => void
+  event: EventWithProgress
+  onClick: (event: EventWithProgress) => void
   /** Pixels per hour in the time grid */
   hourHeight: number
   /** Fraction of column width (for overlapping events): 0-1 */
@@ -53,6 +57,11 @@ export function EventBlock({
     >
       <div className="font-semibold truncate">{event.title}</div>
       <div className="opacity-80">{formatTime(start)} – {formatTime(end)}</div>
+      {event.list_progress && event.list_progress.total > 0 && (
+        <div className="opacity-80 text-[9px]">
+          ☑ {event.list_progress.completed}/{event.list_progress.total}
+        </div>
+      )}
     </button>
   )
 }

@@ -32,6 +32,9 @@ import Link from 'next/link'
 import { TodoItemRow } from './todo-item-row'
 import { TodoItemDialog } from './todo-item-dialog'
 import { TodoListDialog } from './todo-list-dialog'
+import { GroupSections } from './group-sections'
+import { GroupTabs } from './group-tabs'
+import { GroupViewToggle } from './group-view-toggle'
 import type { TodoList, TodoItem, TodoPriority, TodoListType } from '@/types/todos'
 import type { Person } from '@/types/person'
 
@@ -50,9 +53,16 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
   const [editingItem, setEditingItem] = useState<TodoItem | null>(null)
   const [listDialogOpen, setListDialogOpen] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [groupViewMode, setGroupViewMode] = useState<'sections' | 'tabs'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem(`todo-group-view-${initialList.id}`) as 'sections' | 'tabs') || 'sections'
+    }
+    return 'sections'
+  })
 
   const pendingItems = items.filter((i) => i.status !== 'completed')
   const completedItems = items.filter((i) => i.status === 'completed')
+  const hasGroups = items.some((i) => i.group_name !== null && i.group_name !== undefined)
 
   const defaultAssignee = list.default_assigned_to
     ? persons.find((p) => p.id === list.default_assigned_to)
@@ -156,6 +166,7 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
     priority: TodoPriority
     due_date: string | null
     assigned_to: string | null
+    group_name: string | null
   }) => {
     if (!editingItem) return
     const res = await fetch(`/api/todos/${list.id}/items/${editingItem.id}`, {
@@ -231,6 +242,24 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
     }
   }
 
+  const handleGroupViewChange = (mode: 'sections' | 'tabs') => {
+    setGroupViewMode(mode)
+    localStorage.setItem(`todo-group-view-${list.id}`, mode)
+  }
+
+  const handleSaveAsTemplate = async () => {
+    const res = await fetch(`/api/todos/${list.id}/clone`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_template: true }),
+    })
+    if (res.ok) {
+      toast.success('Saved as template')
+    } else {
+      toast.error('Failed to save template')
+    }
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       {/* Header */}
@@ -265,6 +294,7 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
               {list.pinned ? 'Unpin' : 'Pin'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleArchive}>Archive</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSaveAsTemplate}>Save as template</DropdownMenuItem>
             <DropdownMenuItem className="text-destructive" onClick={handleDeleteList}>
               Delete list
             </DropdownMenuItem>
@@ -290,7 +320,30 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
         {pendingItems.length === 0 && completedItems.length === 0 && (
           <p className="text-muted-foreground text-sm py-8 text-center">No tasks yet</p>
         )}
-        {pendingItems.length > 0 && (
+        {pendingItems.length > 0 && hasGroups && (
+          <div className="flex justify-end mb-2">
+            <GroupViewToggle mode={groupViewMode} onToggle={handleGroupViewChange} />
+          </div>
+        )}
+        {pendingItems.length > 0 && hasGroups && groupViewMode === 'sections' && (
+          <GroupSections
+            items={pendingItems}
+            persons={persons}
+            onToggle={handleToggle}
+            onClick={(i) => { setEditingItem(i); setEditDialogOpen(true) }}
+            onDragEnd={handleDragEnd}
+          />
+        )}
+        {pendingItems.length > 0 && hasGroups && groupViewMode === 'tabs' && (
+          <GroupTabs
+            items={pendingItems}
+            persons={persons}
+            onToggle={handleToggle}
+            onClick={(i) => { setEditingItem(i); setEditDialogOpen(true) }}
+            onDragEnd={handleDragEnd}
+          />
+        )}
+        {pendingItems.length > 0 && !hasGroups && (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -358,6 +411,7 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
         onOpenChange={setListDialogOpen}
         list={list}
         persons={persons}
+        householdId={list.household_id}
         onSave={handleEditList}
       />
     </div>

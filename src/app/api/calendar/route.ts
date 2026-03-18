@@ -19,14 +19,33 @@ export async function GET(request: NextRequest) {
   // Range overlap query: events where [start_datetime, end_datetime) overlaps [start, end)
   const { data, error } = await supabase
     .from('calendar_events')
-    .select('*')
+    .select(`
+      *,
+      todo_lists!todo_lists_event_id_fkey(
+        id,
+        title,
+        todo_items(id, status)
+      )
+    `)
     .eq('household_id', householdId)
     .lt('start_datetime', end)
     .gt('end_datetime', start)
     .order('start_datetime', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  const events = (data || []).map((event: any) => {
+    const linkedList = event.todo_lists?.[0] ?? null
+    let list_progress = null
+    if (linkedList) {
+      const items = linkedList.todo_items || []
+      const completed = items.filter((i: any) => i.status === 'completed').length
+      list_progress = { list_id: linkedList.id, total: items.length, completed }
+    }
+    return { ...event, todo_lists: undefined, list_progress }
+  })
+
+  return NextResponse.json(events)
 }
 
 export async function POST(request: NextRequest) {

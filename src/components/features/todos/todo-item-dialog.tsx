@@ -35,6 +35,7 @@ interface TodoItemDialogProps {
     priority: TodoPriority
     due_date: string | null
     assigned_to: string | null
+    group_name: string | null
   }) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
@@ -52,6 +53,7 @@ export function TodoItemDialog({
   const [priority, setPriority] = useState<TodoPriority>('none')
   const [dueDate, setDueDate] = useState('')
   const [assignedTo, setAssignedTo] = useState('none')
+  const [groupName, setGroupName] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -62,6 +64,7 @@ export function TodoItemDialog({
       setPriority(item.priority)
       setDueDate(item.due_date || '')
       setAssignedTo(item.assigned_to || 'none')
+      setGroupName(item.group_name || '')
     }
   }, [open, item])
 
@@ -75,6 +78,7 @@ export function TodoItemDialog({
         priority,
         due_date: dueDate || null,
         assigned_to: assignedTo === 'none' ? null : assignedTo,
+        group_name: groupName.trim() || null,
       })
       onOpenChange(false)
     } finally {
@@ -159,6 +163,15 @@ export function TodoItemDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="task-group">Group</Label>
+            <Input
+              id="task-group"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="e.g. Clothes, Toiletries"
+            />
           </div>
         </div>
         <DialogFooter className="flex justify-between">

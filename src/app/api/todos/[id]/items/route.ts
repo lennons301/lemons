@@ -83,6 +83,7 @@ export async function POST(
       due_date: body.due_date ?? null,
       assigned_to: body.assigned_to ?? list.default_assigned_to ?? null,
       sort_order: body.sort_order ?? nextSortOrder,
+      group_name: body.group_name ?? null,
       created_by: user.id,
     })
     .select()

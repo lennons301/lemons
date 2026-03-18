@@ -32,6 +32,7 @@ export async function PATCH(
   if ('due_date' in body) updates.due_date = body.due_date ?? null
   if ('assigned_to' in body) updates.assigned_to = body.assigned_to ?? null
   if ('sort_order' in body) updates.sort_order = body.sort_order
+  if ('group_name' in body) updates.group_name = body.group_name ?? null
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })

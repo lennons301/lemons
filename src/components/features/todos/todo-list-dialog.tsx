@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -28,11 +29,13 @@ interface TodoListDialogProps {
   onOpenChange: (open: boolean) => void
   list: TodoList | null // null = creating
   persons: Person[]
+  householdId: string
   onSave: (data: {
     title: string
     list_type: TodoListType
     color: string | null
     default_assigned_to: string | null
+    from_template_id?: string
   }) => Promise<void>
 }
 
@@ -41,6 +44,7 @@ export function TodoListDialog({
   onOpenChange,
   list,
   persons,
+  householdId,
   onSave,
 }: TodoListDialogProps) {
   const [title, setTitle] = useState('')
@@ -48,6 +52,9 @@ export function TodoListDialog({
   const [color, setColor] = useState<string | null>(null)
   const [defaultAssignee, setDefaultAssignee] = useState('none')
   const [saving, setSaving] = useState(false)
+  const [fromTemplate, setFromTemplate] = useState(false)
+  const [templates, setTemplates] = useState<TodoList[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
 
   useEffect(() => {
     if (open) {
@@ -61,9 +68,20 @@ export function TodoListDialog({
         setListType('general')
         setColor(null)
         setDefaultAssignee('none')
+        setFromTemplate(false)
+        setSelectedTemplateId('')
       }
     }
   }, [open, list])
+
+  useEffect(() => {
+    if (open && !list) {
+      fetch(`/api/todos?householdId=${householdId}&templates=true`)
+        .then((r) => r.json())
+        .then((data) => setTemplates(data || []))
+        .catch(() => {})
+    }
+  }, [open, list, householdId])
 
   const handleSave = async () => {
     if (!title.trim()) return
@@ -74,6 +92,7 @@ export function TodoListDialog({
         list_type: listType,
         color,
         default_assigned_to: defaultAssignee === 'none' ? null : defaultAssignee,
+        from_template_id: fromTemplate && selectedTemplateId ? selectedTemplateId : undefined,
       })
       onOpenChange(false)
     } finally {
@@ -98,6 +117,33 @@ export function TodoListDialog({
               autoFocus
             />
           </div>
+
+          {!list && templates.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="from-template"
+                checked={fromTemplate}
+                onCheckedChange={(checked) => { setFromTemplate(checked === true); setSelectedTemplateId('') }}
+              />
+              <Label htmlFor="from-template" className="font-normal">From template</Label>
+            </div>
+          )}
+
+          {!list && fromTemplate && (
+            <div className="space-y-2">
+              <Label>Template</Label>
+              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {!list && (
             <div className="space-y-2">

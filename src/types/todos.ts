@@ -10,6 +10,8 @@ export interface TodoList {
   created_by: string
   created_at: string
   updated_at: string
+  is_template?: boolean
+  event_id?: string | null
 }
 
 export interface TodoListWithCounts extends TodoList {
@@ -31,6 +33,7 @@ export interface TodoItem {
   assigned_to: string | null
   created_by: string
   sort_order: number
+  group_name?: string | null
   completed_at: string | null
   created_at: string
   updated_at: string
@@ -73,3 +76,8 @@ export const PRIORITIES: { value: TodoPriority; label: string }[] = [
   { value: 'high', label: 'High' },
   { value: 'urgent', label: 'Urgent' },
 ]
+
+export interface MyTaskItem extends TodoItem {
+  list_title: string
+  list_color: string | null
+}

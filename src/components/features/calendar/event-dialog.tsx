@@ -24,6 +24,7 @@ import { Loader2, Trash2 } from 'lucide-react'
 import { EVENT_CATEGORIES, CATEGORY_COLORS } from '@/types/calendar'
 import type { CalendarEvent, EventCategory } from '@/types/calendar'
 import type { Person } from '@/types/person'
+import { AttachListControl } from './attach-list-control'
 
 interface EventDialogProps {
   open: boolean
@@ -32,6 +33,7 @@ interface EventDialogProps {
   defaultDate?: string // ISO date for pre-fill
   defaultTime?: string // HH:MM for pre-fill (week view click)
   defaultAllDay?: boolean
+  householdId: string
   persons: Person[]
   onSave: (data: {
     title: string
@@ -42,6 +44,8 @@ interface EventDialogProps {
     location: string | null
     assigned_to: string[]
     category: EventCategory
+    attach_mode: 'none' | 'existing' | 'template' | 'new'
+    attach_list_id: string | null
   }) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
@@ -53,6 +57,7 @@ export function EventDialog({
   defaultDate,
   defaultTime,
   defaultAllDay,
+  householdId,
   persons,
   onSave,
   onDelete,
@@ -69,6 +74,8 @@ export function EventDialog({
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [attachMode, setAttachMode] = useState<'none' | 'existing' | 'template' | 'new'>('none')
+  const [attachListId, setAttachListId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -95,6 +102,14 @@ export function EventDialog({
       setAssignedTo(event.assigned_to || [])
       setLocation(event.location || '')
       setDescription(event.description || '')
+      // Initialize linked list state from event's list_progress
+      if ((event as any)?.list_progress?.list_id) {
+        setAttachMode('existing')
+        setAttachListId((event as any).list_progress.list_id)
+      } else {
+        setAttachMode('none')
+        setAttachListId(null)
+      }
     } else {
       setTitle('')
       setCategory('custom')
@@ -106,6 +121,8 @@ export function EventDialog({
       setAssignedTo([])
       setLocation('')
       setDescription('')
+      setAttachMode('none')
+      setAttachListId(null)
     }
   }, [open, event, defaultDate, defaultTime, defaultAllDay])
 
@@ -143,6 +160,8 @@ export function EventDialog({
         location: location.trim() || null,
         assigned_to: assignedTo,
         category,
+        attach_mode: attachMode,
+        attach_list_id: attachListId,
       })
       onOpenChange(false)
     } finally {
@@ -303,6 +322,13 @@ export function EventDialog({
               rows={2}
             />
           </div>
+
+          <AttachListControl
+            householdId={householdId}
+            eventId={event?.id ?? null}
+            currentListId={(event as any)?.list_progress?.list_id ?? null}
+            onChange={(mode, id) => { setAttachMode(mode); setAttachListId(id) }}
+          />
         </div>
         <DialogFooter className="flex justify-between">
           {event && onDelete && (
