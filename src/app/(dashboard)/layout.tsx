@@ -5,20 +5,15 @@ import { Sidebar } from '@/components/features/navigation/sidebar'
 import { MobileHeader } from '@/components/features/navigation/mobile-header'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const layoutStart = performance.now()
   const { supabase, user } = await getCachedClient()
-  console.log(`⏱ Layout getCachedClient: ${(performance.now() - layoutStart).toFixed(0)}ms`)
 
   if (!user) redirect('/login')
 
   // Parallel fetch: memberships + profile (profile uses React.cache, shared with getPageContext)
-  const queryStart = performance.now()
   const [memberships, profile] = await Promise.all([
     getUserHouseholds(supabase, user.id),
     getCachedProfile(supabase, user.id),
   ])
-  console.log(`⏱ Layout queries: ${(performance.now() - queryStart).toFixed(0)}ms`)
-  console.log(`⏱ Layout total: ${(performance.now() - layoutStart).toFixed(0)}ms`)
 
   if (!memberships || memberships.length === 0) {
     redirect('/onboarding')

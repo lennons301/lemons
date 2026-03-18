@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  const proxyStart = performance.now()
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -31,7 +30,6 @@ export async function updateSession(request: NextRequest) {
   // for the actual authenticated user data. This avoids a redundant ~200-400ms
   // network round-trip on every request.
   const { data: { session } } = await supabase.auth.getSession()
-  console.log(`⏱ proxy.updateSession: ${(performance.now() - proxyStart).toFixed(0)}ms`)
 
   // Redirect unauthenticated users to login (except auth pages)
   if (

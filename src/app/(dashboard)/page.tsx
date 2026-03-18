@@ -3,9 +3,7 @@ import { getWeekStart, getWeekRange } from '@/lib/utils/calendar'
 import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function HomePage() {
-  const pageStart = performance.now()
   const { supabase, user, householdId, profile } = await getPageContext()
-  console.log(`⏱ HomePage getPageContext: ${(performance.now() - pageStart).toFixed(0)}ms`)
 
   const displayName = profile.display_name || user.email?.split('@')[0] || 'there'
 
@@ -19,7 +17,6 @@ export default async function HomePage() {
   const threeDaysStr = threeDaysFromNow.toISOString().split('T')[0]
 
   // Fetch all data in parallel
-  const queryStart = performance.now()
   const [eventsResult, listsResult, mealsResult, inventoryResult, memberResult] = await Promise.all([
     // Events this week
     supabase
@@ -63,9 +60,6 @@ export default async function HomePage() {
       .eq('profile_id', user.id)
       .single(),
   ])
-
-  console.log(`⏱ HomePage queries (parallel): ${(performance.now() - queryStart).toFixed(0)}ms`)
-  console.log(`⏱ HomePage total: ${(performance.now() - pageStart).toFixed(0)}ms`)
 
   const events = eventsResult.data || []
   const meals = mealsResult.data || []
