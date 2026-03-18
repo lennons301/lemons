@@ -15,6 +15,16 @@ Household management web app: recipes, meal planning, calendar, todos, inventory
 - **Deployment:** Vercel
 - **Testing:** Vitest, React Testing Library, Playwright
 
+## Commands
+
+```bash
+npm run dev          # Start dev server (localhost:3000)
+npm run build        # Production build (also runs TypeScript check)
+npm run lint         # ESLint
+npx vitest           # Unit tests
+npx playwright test  # E2E tests (requires dev server running)
+```
+
 ## Architecture
 
 **Approach A: Next.js Full-Stack Monolith.** All server-side logic lives in `src/app/api/` route handlers and `src/lib/`.
@@ -96,14 +106,19 @@ Production:    Vercel production → production Supabase project
 - **Many-to-many relations** (tags, ingredients, recipe_members) use delete-and-reinsert on update. No upsert.
 - **Member colors** are deterministic by ID hash (8 colors in `member-colors.ts`). Used for avatars, badges, calendar.
 - **Claude API images** must be under 5MB base64. Frontend compresses all images before sending (iterative JPEG quality reduction).
+- **Todo list templates** use `is_template` flag on `todo_lists`. Clone via `/api/todos/[id]/clone`. Templates are household-scoped.
+- **Item groups** use `group_name` on `todo_items`. UI supports collapsible sections or tabs (persisted in localStorage per list).
+- **Event-linked lists** use `event_id` FK on `todo_lists`. One list per event. Calendar events show linked list progress.
 
 ## Key Files
 
 - `docs/plans/` — Design docs and implementation plans
-- `supabase/migrations/` — Sequential numbered migrations (00001–00006+)
-- `src/components/features/` — Feature components (recipe-form, recipe-detail, member-picker, tag-input, etc.)
+- `supabase/migrations/` — Sequential numbered migrations (00001–00015+)
+- `src/components/features/` — Feature components organized by domain (recipes, todos, calendar, meal-plan, shopping, inventory, etc.)
 - `src/lib/utils/member-colors.ts` — Deterministic member color assignment
 - `src/lib/ai/extract-recipe.ts` — Claude API recipe extraction
+- `src/app/api/todos/[id]/clone/route.ts` — Clone endpoint for list templates
+- `src/app/api/todos/my-tasks/route.ts` — Cross-list "My Tasks" query
 
 ## Design Document
 
