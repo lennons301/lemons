@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const householdId = url.searchParams.get('householdId')
   const showArchived = url.searchParams.get('archived') === 'true'
+  const showTemplates = url.searchParams.get('templates') === 'true'
 
   if (!householdId) return NextResponse.json({ error: 'householdId is required' }, { status: 400 })
 
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
     `)
     .eq('household_id', householdId)
     .neq('list_type', 'shopping')
+    .eq('is_template', showTemplates)
     .order('created_at', { ascending: false })
 
   if (showArchived) {
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { household_id, title, list_type, color, default_assigned_to } = body
+  const { household_id, title, list_type, color, default_assigned_to, is_template, event_id } = body
 
   if (!household_id || !title?.trim()) {
     return NextResponse.json({ error: 'household_id and title are required' }, { status: 400 })
@@ -73,6 +75,8 @@ export async function POST(request: NextRequest) {
       list_type,
       color: color ?? null,
       default_assigned_to: default_assigned_to ?? null,
+      is_template: is_template ?? false,
+      event_id: event_id ?? null,
       created_by: user.id,
     })
     .select()
