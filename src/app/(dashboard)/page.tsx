@@ -17,7 +17,7 @@ export default async function HomePage() {
   const threeDaysStr = threeDaysFromNow.toISOString().split('T')[0]
 
   // Fetch all data in parallel
-  const [eventsResult, listsResult, mealsResult, inventoryResult] = await Promise.all([
+  const [eventsResult, listsResult, mealsResult, inventoryResult, memberResult] = await Promise.all([
     // Events this week
     supabase
       .from('calendar_events')
@@ -51,6 +51,14 @@ export default async function HomePage() {
       .lte('expiry_date', threeDaysStr)
       .gte('expiry_date', today)
       .order('expiry_date', { ascending: true }),
+
+    // Current user's person ID
+    supabase
+      .from('household_members')
+      .select('id')
+      .eq('household_id', householdId)
+      .eq('profile_id', user.id)
+      .single(),
   ])
 
   const events = eventsResult.data || []
@@ -72,15 +80,7 @@ export default async function HomePage() {
       item.due_date <= weekEndDate
     )
 
-  // Find current user's person ID
-  const { data: memberRow } = await supabase
-    .from('household_members')
-    .select('id')
-    .eq('household_id', householdId)
-    .eq('profile_id', user.id)
-    .single()
-
-  const currentPersonId = memberRow?.id || null
+  const currentPersonId = memberResult.data?.id || null
 
   return (
     <DashboardView

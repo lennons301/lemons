@@ -120,7 +120,7 @@ export function eventOverlapsDay(event: { start_datetime: string; end_datetime: 
 /**
  * Get events for a specific day from a list.
  */
-export function getEventsForDay(events: { start_datetime: string; end_datetime: string }[], day: Date) {
+export function getEventsForDay(events: { start_datetime: string; end_datetime: string; all_day?: boolean }[], day: Date) {
   return events.filter((e) => eventOverlapsDay(e, day))
 }
 

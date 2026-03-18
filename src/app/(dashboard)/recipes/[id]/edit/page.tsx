@@ -10,26 +10,27 @@ export default async function EditRecipePage({
   const { id } = await params
   const { supabase, householdId } = await getPageContext()
 
-  const persons = await getHouseholdPersons(supabase, householdId)
+  const [persons, recipeResult] = await Promise.all([
+    getHouseholdPersons(supabase, householdId),
+    supabase
+      .from('recipes')
+      .select(`
+        *,
+        recipe_ingredients(*),
+        recipe_tags(tag_name),
+        recipe_members(person_id)
+      `)
+      .eq('id', id)
+      .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
+      .single(),
+  ])
 
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .select(`
-      *,
-      recipe_ingredients(*),
-      recipe_tags(tag_name),
-      recipe_members(person_id)
-    `)
-    .eq('id', id)
-    .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
-    .single()
-
-  if (error || !recipe) notFound()
+  if (recipeResult.error || !recipeResult.data) notFound()
 
   return (
     <RecipeForm
       householdId={householdId}
-      initialData={recipe as any}
+      initialData={recipeResult.data as any}
       persons={persons}
     />
   )

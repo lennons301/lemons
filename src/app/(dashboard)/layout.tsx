@@ -1,28 +1,23 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { getUserHouseholds } from '@/lib/supabase/queries'
+import { getCachedClient, getCachedProfile, getUserHouseholds } from '@/lib/supabase/queries'
 import { HouseholdProvider } from '@/components/providers/household-provider'
 import { Sidebar } from '@/components/features/navigation/sidebar'
 import { MobileHeader } from '@/components/features/navigation/mobile-header'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getCachedClient()
 
   if (!user) redirect('/login')
 
-  const memberships = await getUserHouseholds(supabase, user.id)
+  // Parallel fetch: memberships + profile (profile uses React.cache, shared with getPageContext)
+  const [memberships, profile] = await Promise.all([
+    getUserHouseholds(supabase, user.id),
+    getCachedProfile(supabase, user.id),
+  ])
 
-  // No households — redirect to onboarding
   if (!memberships || memberships.length === 0) {
     redirect('/onboarding')
   }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id')
-    .eq('id', user.id)
-    .single()
 
   const households = memberships.map((m) => ({
     id: m.household_id,

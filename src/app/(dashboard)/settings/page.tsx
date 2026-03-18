@@ -8,33 +8,25 @@ import { getPageContext } from '@/lib/supabase/queries'
 export default async function SettingsPage() {
   const { supabase, user, householdId } = await getPageContext()
 
-  // Fetch household details
-  const { data: household } = await supabase
-    .from('households')
-    .select('*')
-    .eq('id', householdId)
-    .single()
+  const [householdResult, membersResult, managedMembersResult, staplesResult] = await Promise.all([
+    supabase.from('households').select('*').eq('id', householdId).single(),
+    supabase
+      .from('household_members')
+      .select('*, profiles!household_members_profile_id_fkey(display_name, email)')
+      .eq('household_id', householdId),
+    supabase.from('household_managed_members').select('*').eq('household_id', householdId),
+    supabase
+      .from('household_staples')
+      .select('*')
+      .eq('household_id', householdId)
+      .order('name', { ascending: true }),
+  ])
 
-  // Fetch members
-  const { data: members } = await supabase
-    .from('household_members')
-    .select('*, profiles!household_members_profile_id_fkey(display_name, email)')
-    .eq('household_id', householdId)
+  const household = householdResult.data
+  const members = membersResult.data
+  const managedMembers = managedMembersResult.data
+  const staples = staplesResult.data
 
-  // Fetch managed members
-  const { data: managedMembers } = await supabase
-    .from('household_managed_members')
-    .select('*')
-    .eq('household_id', householdId)
-
-  // Fetch staples
-  const { data: staples } = await supabase
-    .from('household_staples')
-    .select('*')
-    .eq('household_id', householdId)
-    .order('name', { ascending: true })
-
-  // Check if current user is admin
   const currentMember = members?.find((m) => m.profile_id === user.id)
   const isAdmin = currentMember?.role === 'admin'
 

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
@@ -6,20 +7,39 @@ import { createClient } from './server'
 type Client = SupabaseClient<Database>
 
 /**
+ * Cached per-request: creates Supabase client + validates auth.
+ * React.cache ensures this runs once per server request even if
+ * called from both layout.tsx and page.tsx.
+ */
+export const getCachedClient = cache(async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return { supabase, user }
+})
+
+/**
+ * Cached per-request: fetches user profile.
+ * Exported so layout.tsx can call it directly, sharing the cache with getPageContext.
+ */
+export const getCachedProfile = cache(async (supabase: Client, userId: string) => {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('default_household_id, display_name')
+    .eq('id', userId)
+    .single()
+  return profile
+})
+
+/**
  * Common page-level context: authenticated user + active household.
  * Redirects to /login or /onboarding if prerequisites are missing,
  * so callers can trust the returned values are non-null.
  */
 export async function getPageContext() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user } = await getCachedClient()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_household_id, display_name')
-    .eq('id', user.id)
-    .single()
+  const profile = await getCachedProfile(supabase, user.id)
 
   const householdId = profile?.default_household_id
   if (!householdId) redirect('/onboarding')

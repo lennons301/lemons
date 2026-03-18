@@ -13,14 +13,8 @@ export default async function RecipesPage({
   const { search, tag, author, book, member } = await searchParams
   const { supabase, householdId } = await getPageContext()
 
-  // Fetch household persons for member filter
-  const { data: persons } = await supabase
-    .from('household_persons')
-    .select('id, display_name, date_of_birth, person_type')
-    .eq('household_id', householdId)
-
-  // Fetch recipes
-  let query = supabase
+  // Build recipes query with optional search filter
+  let recipesQuery = supabase
     .from('recipes')
     .select(`
       *,
@@ -32,10 +26,20 @@ export default async function RecipesPage({
     .order('created_at', { ascending: false })
 
   if (search) {
-    query = query.ilike('title', `%${search}%`)
+    recipesQuery = recipesQuery.ilike('title', `%${search}%`)
   }
 
-  const { data: recipes } = await query
+  // Fetch persons and recipes in parallel
+  const [personsResult, recipesResult] = await Promise.all([
+    supabase
+      .from('household_persons')
+      .select('id, display_name, date_of_birth, person_type')
+      .eq('household_id', householdId),
+    recipesQuery,
+  ])
+
+  const persons = personsResult.data
+  const recipes = recipesResult.data
 
   let filteredRecipes = recipes || []
   if (tag) {

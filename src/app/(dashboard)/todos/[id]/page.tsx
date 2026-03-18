@@ -8,26 +8,23 @@ export default async function TodoDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const { supabase } = await getPageContext()
+  const { supabase, householdId } = await getPageContext()
 
-  const { data: list, error } = await supabase
-    .from('todo_lists')
-    .select(`
-      *,
-      todo_items(*)
-    `)
-    .eq('id', id)
-    .neq('list_type', 'shopping')
-    .order('sort_order', { referencedTable: 'todo_items', ascending: true })
-    .single()
+  const [listResult, personsResult] = await Promise.all([
+    supabase
+      .from('todo_lists')
+      .select(`*, todo_items(*)`)
+      .eq('id', id)
+      .neq('list_type', 'shopping')
+      .order('sort_order', { referencedTable: 'todo_items', ascending: true })
+      .single(),
+    supabase
+      .from('household_persons')
+      .select('id, display_name')
+      .eq('household_id', householdId),
+  ])
 
-  if (error || !list) notFound()
+  if (listResult.error || !listResult.data) notFound()
 
-  // Fetch household persons for assignee picker
-  const { data: persons } = await supabase
-    .from('household_persons')
-    .select('id, display_name')
-    .eq('household_id', list.household_id)
-
-  return <TodoDetail list={list as any} persons={persons || []} />
+  return <TodoDetail list={listResult.data as any} persons={personsResult.data || []} />
 }

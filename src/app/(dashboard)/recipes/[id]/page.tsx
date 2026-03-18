@@ -10,23 +10,24 @@ export default async function RecipeDetailPage({
   const { id } = await params
   const { supabase, householdId } = await getPageContext()
 
-  const persons = await getHouseholdPersons(supabase, householdId)
+  const [persons, recipeResult] = await Promise.all([
+    getHouseholdPersons(supabase, householdId),
+    supabase
+      .from('recipes')
+      .select(`
+        *,
+        recipe_ingredients(*),
+        recipe_tags(tag_name),
+        recipe_images(id, url, type, sort_order),
+        recipe_members(person_id)
+      `)
+      .eq('id', id)
+      .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
+      .order('sort_order', { referencedTable: 'recipe_images', ascending: true })
+      .single(),
+  ])
 
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .select(`
-      *,
-      recipe_ingredients(*),
-      recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order),
-      recipe_members(person_id)
-    `)
-    .eq('id', id)
-    .order('sort_order', { referencedTable: 'recipe_ingredients', ascending: true })
-    .order('sort_order', { referencedTable: 'recipe_images', ascending: true })
-    .single()
+  if (recipeResult.error || !recipeResult.data) notFound()
 
-  if (error || !recipe) notFound()
-
-  return <RecipeDetail recipe={recipe as any} persons={persons} />
+  return <RecipeDetail recipe={recipeResult.data as any} persons={persons} />
 }
