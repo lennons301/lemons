@@ -162,6 +162,8 @@ export function CalendarView({
     location: string | null
     assigned_to: string[]
     category: EventCategory
+    attach_mode: 'none' | 'existing' | 'template' | 'new'
+    attach_list_id: string | null
   }) => {
     if (editingEvent) {
       const res = await fetch(`/api/calendar/${editingEvent.id}`, {
@@ -170,8 +172,33 @@ export function CalendarView({
         body: JSON.stringify(data),
       })
       if (res.ok) {
-        const updated = await res.json()
-        setEvents((prev) => prev.map((e) => (e.id === editingEvent.id ? updated : e)))
+        const savedEvent = await res.json()
+        // Handle list attachment after event save
+        if (data.attach_mode === 'new' && savedEvent.id) {
+          await fetch('/api/todos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              household_id: householdId,
+              title: `${data.title} checklist`,
+              list_type: 'checklist',
+              event_id: savedEvent.id,
+            }),
+          })
+        } else if (data.attach_mode === 'template' && data.attach_list_id && savedEvent.id) {
+          await fetch(`/api/todos/${data.attach_list_id}/clone`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_template: false, event_id: savedEvent.id }),
+          })
+        } else if (data.attach_mode === 'existing' && data.attach_list_id && savedEvent.id) {
+          await fetch(`/api/todos/${data.attach_list_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_id: savedEvent.id }),
+          })
+        }
+        setEvents((prev) => prev.map((e) => (e.id === editingEvent.id ? savedEvent : e)))
       } else {
         toast.error('Failed to save event')
       }
@@ -182,8 +209,33 @@ export function CalendarView({
         body: JSON.stringify({ household_id: householdId, ...data }),
       })
       if (res.ok) {
-        const created = await res.json()
-        setEvents((prev) => [...prev, created])
+        const savedEvent = await res.json()
+        // Handle list attachment after event save
+        if (data.attach_mode === 'new' && savedEvent.id) {
+          await fetch('/api/todos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              household_id: householdId,
+              title: `${data.title} checklist`,
+              list_type: 'checklist',
+              event_id: savedEvent.id,
+            }),
+          })
+        } else if (data.attach_mode === 'template' && data.attach_list_id && savedEvent.id) {
+          await fetch(`/api/todos/${data.attach_list_id}/clone`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_template: false, event_id: savedEvent.id }),
+          })
+        } else if (data.attach_mode === 'existing' && data.attach_list_id && savedEvent.id) {
+          await fetch(`/api/todos/${data.attach_list_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_id: savedEvent.id }),
+          })
+        }
+        setEvents((prev) => [...prev, savedEvent])
       } else {
         toast.error('Failed to create event')
       }
@@ -269,6 +321,7 @@ export function CalendarView({
         defaultDate={defaultDate}
         defaultTime={defaultTime}
         defaultAllDay={defaultAllDay}
+        householdId={householdId}
         persons={persons}
         onSave={handleSave}
         onDelete={handleDelete}
