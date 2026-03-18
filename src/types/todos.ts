@@ -10,8 +10,8 @@ export interface TodoList {
   created_by: string
   created_at: string
   updated_at: string
-  is_template: boolean
-  event_id: string | null
+  is_template?: boolean
+  event_id?: string | null
 }
 
 export interface TodoListWithCounts extends TodoList {
@@ -33,7 +33,7 @@ export interface TodoItem {
   assigned_to: string | null
   created_by: string
   sort_order: number
-  group_name: string | null
+  group_name?: string | null
   completed_at: string | null
   created_at: string
   updated_at: string

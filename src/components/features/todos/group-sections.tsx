@@ -32,7 +32,7 @@ interface GroupSectionsProps {
 function groupItems(items: TodoItem[]): { name: string | null; items: TodoItem[] }[] {
   const groups = new Map<string | null, TodoItem[]>()
   for (const item of items) {
-    const key = item.group_name
+    const key = item.group_name ?? null
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(item)
   }

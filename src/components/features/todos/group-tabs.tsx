@@ -32,10 +32,11 @@ interface GroupTabsProps {
 function getGroupNames(items: TodoItem[]): (string | null)[] {
   const seen = new Map<string | null, number>()
   for (const item of items) {
-    if (!seen.has(item.group_name)) {
-      seen.set(item.group_name, item.sort_order)
+    const key = item.group_name ?? null
+    if (!seen.has(key)) {
+      seen.set(key, item.sort_order)
     } else {
-      seen.set(item.group_name, Math.min(seen.get(item.group_name)!, item.sort_order))
+      seen.set(key, Math.min(seen.get(key)!, item.sort_order))
     }
   }
   return Array.from(seen.entries())
@@ -53,7 +54,7 @@ export function GroupTabs({ items, persons, onToggle, onClick, onDragEnd }: Grou
     }
   }, [groupNames, activeTab])
 
-  const activeItems = items.filter((i) => i.group_name === activeTab)
+  const activeItems = items.filter((i) => (i.group_name ?? null) === activeTab)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -65,7 +66,7 @@ export function GroupTabs({ items, persons, onToggle, onClick, onDragEnd }: Grou
     <div>
       <div className="flex gap-1 border-b mb-3 overflow-x-auto">
         {groupNames.map((name) => {
-          const count = items.filter((i) => i.group_name === name).length
+          const count = items.filter((i) => (i.group_name ?? null) === name).length
           return (
             <button
               key={name ?? '__ungrouped'}

@@ -22,7 +22,7 @@ export interface ListProgress {
 }
 
 export interface CalendarEventWithProgress extends CalendarEvent {
-  list_progress: ListProgress | null
+  list_progress?: ListProgress | null
 }
 
 export type EventCategory = 'chore' | 'appointment' | 'birthday' | 'holiday' | 'social' | 'custom'

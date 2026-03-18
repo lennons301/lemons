@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     query = query.eq('list_id', filterList)
   }
   if (filterPriority) {
-    query = query.eq('priority', filterPriority)
+    query = query.eq('priority', filterPriority as any)
   }
 
   const { data, error } = await query.order('due_date', { ascending: true, nullsFirst: false })
