@@ -64,6 +64,7 @@ export async function PUT(
   if ('pinned' in body) updates.pinned = body.pinned
   if ('archived' in body) updates.archived = body.archived
   if ('default_assigned_to' in body) updates.default_assigned_to = body.default_assigned_to ?? null
+  if ('event_id' in body) updates.event_id = body.event_id ?? null
 
   const { data, error } = await supabase
     .from('todo_lists')
