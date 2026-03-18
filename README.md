@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lemons
 
-## Getting Started
+Household management platform: recipes, meal planning, calendar, todos, inventory, shopping lists. Multi-household, per-person accounts.
 
-First, run the development server:
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Local database (optional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+supabase start        # Requires Docker
+supabase db reset     # Applies migrations + seed data
+```
 
-## Learn More
+If Docker isn't available (e.g. WSL2), the app can run against the staging Supabase project — pull env vars with `vercel env pull`.
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Next.js 14 (App Router) · Supabase (Postgres + RLS + Auth + Storage) · Tailwind CSS · shadcn/ui · Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+- `main` → production (Vercel auto-deploy)
+- PR branches → preview deployments
+- Supabase migrations run automatically on deploy via GitHub integration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Project conventions and architecture: [`CLAUDE.md`](CLAUDE.md)
+- Full design document: [`docs/plans/2026-03-02-lemons-design.md`](docs/plans/2026-03-02-lemons-design.md)
+- Phase plans: [`docs/plans/`](docs/plans/)
