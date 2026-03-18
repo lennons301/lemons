@@ -52,12 +52,22 @@ export function TodoListView({ lists: initialLists, householdId, persons }: Todo
     list_type: TodoListType
     color: string | null
     default_assigned_to: string | null
+    from_template_id?: string
   }) => {
-    const res = await fetch('/api/todos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ household_id: householdId, ...data }),
-    })
+    let res
+    if (data.from_template_id) {
+      res = await fetch(`/api/todos/${data.from_template_id}/clone`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: data.title, is_template: false }),
+      })
+    } else {
+      res = await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ household_id: householdId, ...data }),
+      })
+    }
     if (res.ok) {
       const created = await res.json()
       router.push(`/todos/${created.id}`)
@@ -193,6 +203,7 @@ export function TodoListView({ lists: initialLists, householdId, persons }: Todo
             onOpenChange={setDialogOpen}
             list={null}
             persons={persons}
+            householdId={householdId}
             onSave={handleCreate}
           />
         </>

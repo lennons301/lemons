@@ -411,6 +411,7 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
         onOpenChange={setListDialogOpen}
         list={list}
         persons={persons}
+        householdId={list.household_id}
         onSave={handleEditList}
       />
     </div>
