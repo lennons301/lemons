@@ -100,8 +100,8 @@ export function AddMealDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85dvh] overflow-hidden !gap-0 !p-0">
-        <div className="flex flex-col max-h-[85dvh]">
+      <DialogContent className="overflow-hidden !gap-0 !p-0 max-h-[92dvh] sm:max-h-[85dvh] top-auto bottom-0 left-0 right-0 translate-x-0 translate-y-0 max-w-full rounded-b-none sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:right-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:rounded-b-lg">
+        <div className="flex flex-col max-h-[92dvh] sm:max-h-[85dvh]">
           <div className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6">
             <DialogTitle>
               {editingEntry ? 'Edit Meal' : 'Add Meal'} — {mealType} on {date}
