@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MemberPicker } from '@/components/features/members/member-picker'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Minus, Plus } from 'lucide-react'
 import type { Person } from '@/types/person'
 
 interface AddMealDialogProps {
@@ -162,14 +162,28 @@ export function AddMealDialog({
             <div className="space-y-3 pt-3">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <Label htmlFor="servings">Servings</Label>
-                  <Input
-                    id="servings"
-                    type="number"
-                    min={1}
-                    value={servings}
-                    onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-                  />
+                  <Label>Servings</Label>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 shrink-0"
+                      onClick={() => setServings(Math.max(1, servings - 1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-8 text-center text-sm font-medium">{servings}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 shrink-0"
+                      onClick={() => setServings(servings + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex-1">
                   <Label htmlFor="notes">Notes</Label>
