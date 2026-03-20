@@ -68,6 +68,23 @@ function getExpiryBadge(expiryDate: string): { label: string; className: string 
   return { label: `${diff} days`, className: 'bg-amber-500/20 text-amber-400' }
 }
 
+function getDateLabel(date: Date): string {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+
+  if (d.getTime() === today.getTime()) return "Today's"
+  if (d.getTime() === tomorrow.getTime()) return "Tomorrow's"
+  if (d.getTime() === yesterday.getTime()) return "Yesterday's"
+  return date.toLocaleDateString('en-GB', { weekday: 'long' }) + "'s"
+}
+
 export function DashboardView({
   displayName,
   events,
@@ -77,8 +94,15 @@ export function DashboardView({
   currentPersonId,
 }: DashboardViewProps) {
   const [filter, setFilter] = useState<FilterMode>('household')
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
 
   const isMe = filter === 'me'
+
+  const selectedDateIso = selectedDate.toISOString().split('T')[0]
 
   // Filter events
   const filteredEvents = useMemo(() => {
@@ -88,48 +112,46 @@ export function DashboardView({
     )
   }, [events, isMe, currentPersonId])
 
-  // Today's events
+  // Selected day's events
   const todayEvents = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const todayIso = today.toISOString()
-    const tomorrowIso = tomorrow.toISOString()
+    const dayStart = new Date(selectedDate)
+    dayStart.setHours(0, 0, 0, 0)
+    const dayEnd = new Date(dayStart)
+    dayEnd.setDate(dayEnd.getDate() + 1)
+    const dayStartIso = dayStart.toISOString()
+    const dayEndIso = dayEnd.toISOString()
 
     return filteredEvents
-      .filter((e) => e.start_datetime < tomorrowIso && e.end_datetime > todayIso)
+      .filter((e) => e.start_datetime < dayEndIso && e.end_datetime > dayStartIso)
       .sort((a, b) => {
         if (a.all_day !== b.all_day) return a.all_day ? -1 : 1
         return new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
       })
-  }, [filteredEvents])
+  }, [filteredEvents, selectedDate])
 
-  // Filter tasks
+  // Filter tasks by selected date
   const filteredTasks = useMemo(() => {
     let t = tasks
     if (isMe && currentPersonId) {
       t = t.filter((task) => !task.assigned_to || task.assigned_to === currentPersonId)
     }
+    t = t.filter((task) => task.due_date === selectedDateIso)
     return t.sort((a, b) => {
-      const aDate = a.due_date || '9999-12-31'
-      const bDate = b.due_date || '9999-12-31'
-      if (aDate !== bDate) return aDate.localeCompare(bDate)
       const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3, none: 4 }
       return (priorityOrder[a.priority] ?? 4) - (priorityOrder[b.priority] ?? 4)
     })
-  }, [tasks, isMe, currentPersonId])
+  }, [tasks, isMe, currentPersonId, selectedDateIso])
 
-  // Filter meals
+  // Filter meals by selected date
   const filteredMeals = useMemo(() => {
-    let m = meals
+    let m = meals.filter((meal) => meal.date === selectedDateIso)
     if (isMe && currentPersonId) {
       m = m.filter(
         (meal) => meal.assigned_to.length === 0 || meal.assigned_to.includes(currentPersonId)
       )
     }
     return m.sort((a, b) => (MEAL_TYPE_ORDER[a.meal_type] ?? 9) - (MEAL_TYPE_ORDER[b.meal_type] ?? 9))
-  }, [meals, isMe, currentPersonId])
+  }, [meals, isMe, currentPersonId, selectedDateIso])
 
   const visibleTasks = filteredTasks.slice(0, MAX_TASKS)
   const taskOverflow = filteredTasks.length - MAX_TASKS
@@ -168,12 +190,12 @@ export function DashboardView({
       </div>
 
       {/* Week strip */}
-      <WeekStrip events={filteredEvents} />
+      <WeekStrip events={filteredEvents} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
       {/* Widget grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Today's Events */}
-        <DashboardWidget title="Today's Events" linkHref="/calendar" linkText="View calendar" empty="No events today">
+        {/* Selected day's Events */}
+        <DashboardWidget title={`${getDateLabel(selectedDate)} Events`} linkHref="/calendar" linkText="View calendar" empty={`No events ${getDateLabel(selectedDate).toLowerCase().replace("'s", '')}`}>
           {todayEvents.length > 0 && (
             <div className="space-y-0.5">
               {todayEvents.map((evt) => (
@@ -195,7 +217,7 @@ export function DashboardView({
         </DashboardWidget>
 
         {/* Tasks Due */}
-        <DashboardWidget title="Tasks Due" linkHref="/todos" linkText="View todos" empty="No tasks due">
+        <DashboardWidget title={`${getDateLabel(selectedDate)} Tasks`} linkHref="/todos" linkText="View todos" empty="No tasks due">
           {visibleTasks.length > 0 && (
             <div className="space-y-0.5">
               {visibleTasks.map((task) => {
@@ -225,9 +247,9 @@ export function DashboardView({
           )}
         </DashboardWidget>
 
-        {/* Today's Meals */}
+        {/* Selected day's Meals */}
         <DashboardWidget
-          title="Today's Meals"
+          title={`${getDateLabel(selectedDate)} Meals`}
           linkHref="/meal-plans"
           linkText="View meal plan"
           empty={undefined}

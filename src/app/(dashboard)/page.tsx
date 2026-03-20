@@ -35,12 +35,13 @@ export default async function HomePage() {
       .neq('list_type', 'shopping')
       .eq('archived', false),
 
-    // Meals today
+    // Meals this week
     supabase
       .from('meal_plan_entries')
       .select('*, recipes(id, title)')
       .eq('household_id', householdId)
-      .eq('date', today),
+      .gte('date', weekStartIso.split('T')[0])
+      .lte('date', weekEndIso.split('T')[0]),
 
     // Expiring inventory
     supabase
