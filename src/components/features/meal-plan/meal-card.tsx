@@ -1,6 +1,7 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { X, BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
 
@@ -52,17 +53,29 @@ export function MealCard({ entry, persons, onEdit, onDelete }: MealCardProps) {
           </div>
         )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-5 w-5 opacity-0 group-hover:opacity-100 flex-shrink-0"
-        onClick={(e) => {
-          e.stopPropagation()
-          onDelete()
-        }}
-      >
-        <X className="h-3 w-3" />
-      </Button>
+      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+        {entry.recipe_id && (
+          <Link
+            href={`/recipes/${entry.recipe_id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex h-5 w-5 items-center justify-center rounded-sm hover:bg-accent hover:text-accent-foreground"
+            title="View recipe"
+          >
+            <BookOpen className="h-3 w-3" />
+          </Link>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
     </div>
   )
 }

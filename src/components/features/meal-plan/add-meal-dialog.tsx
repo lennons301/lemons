@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MemberPicker } from '@/components/features/members/member-picker'
-import { Loader2, Minus, Plus } from 'lucide-react'
+import { Loader2, Minus, Plus, BookOpen } from 'lucide-react'
 import type { Person } from '@/types/person'
 
 interface AddMealDialogProps {
@@ -215,6 +216,14 @@ export function AddMealDialog({
           </div>
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
+            {editingEntry?.recipe_id && (
+              <Button variant="ghost" asChild className="sm:mr-auto">
+                <Link href={`/recipes/${editingEntry.recipe_id}`}>
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  View Recipe
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={!canSave || saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
