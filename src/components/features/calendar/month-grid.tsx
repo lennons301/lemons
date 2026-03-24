@@ -14,6 +14,14 @@ interface MonthGridProps {
 }
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+function localDateKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 const MAX_VISIBLE_EVENTS = 3
 
 export function MonthGrid({ year, month, events, onDayClick, onEventClick }: MonthGridProps) {
@@ -22,7 +30,7 @@ export function MonthGrid({ year, month, events, onDayClick, onEventClick }: Mon
   const dayEvents = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
     for (const day of days) {
-      const key = day.toISOString().split('T')[0]
+      const key = localDateKey(day)
       const dayEvts = events
         .filter((e) => eventOverlapsDay(e, day))
         .sort((a, b) => {
@@ -51,7 +59,7 @@ export function MonthGrid({ year, month, events, onDayClick, onEventClick }: Mon
       {/* Day grid */}
       <div className="grid grid-cols-7">
         {days.map((day, i) => {
-          const key = day.toISOString().split('T')[0]
+          const key = localDateKey(day)
           const evts = dayEvents.get(key) || []
           const isCurrentMonth = day.getMonth() === month
           const today = isToday(day)
