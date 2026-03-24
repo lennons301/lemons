@@ -53,7 +53,7 @@ export function MealCard({ entry, persons, onEdit, onDelete }: MealCardProps) {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+      <div className="flex flex-col gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0">
         {entry.recipe_id && (
           <Link
             href={`/recipes/${entry.recipe_id}`}
