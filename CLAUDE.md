@@ -123,3 +123,9 @@ Production:    Vercel production → production Supabase project
 ## Design Document
 
 Full design: `docs/plans/2026-03-02-lemons-design.md`
+
+## Platform Context
+
+Platform standards and choices: see /workspace/platform/ (in agent containers)
+or ~/code/platform/ (on local machines).
+This project's registry entry: products/lemons.yaml
