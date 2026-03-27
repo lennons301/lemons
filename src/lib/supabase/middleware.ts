@@ -31,13 +31,14 @@ export async function updateSession(request: NextRequest) {
   // network round-trip on every request.
   const { data: { session } } = await supabase.auth.getSession()
 
-  // Redirect unauthenticated users to login (except auth pages)
+  // Redirect unauthenticated users to login (except auth pages and public API routes)
   if (
     !session &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
     !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/invite')
+    !request.nextUrl.pathname.startsWith('/invite') &&
+    !request.nextUrl.pathname.startsWith('/api/hello')
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
