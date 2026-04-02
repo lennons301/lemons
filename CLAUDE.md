@@ -6,24 +6,31 @@ Household management web app: recipes, meal planning, calendar, todos, inventory
 
 ## Tech Stack
 
-- **Frontend:** Next.js 14+ (App Router), React, Tailwind CSS, shadcn/ui
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js API routes (server-side logic)
 - **Database:** Supabase (PostgreSQL + Row Level Security)
 - **Auth:** Supabase Auth (email/password + OAuth)
 - **Storage:** Supabase Storage (recipe images, avatars)
 - **AI:** Anthropic Claude API (recipe image extraction)
+- **Secrets:** Doppler (source of truth for all environments)
 - **Deployment:** Vercel
-- **Testing:** Vitest, React Testing Library, Playwright
+- **Testing:** Vitest, React Testing Library
 
 ## Commands
 
+All dev commands run via Doppler to inject secrets:
+
 ```bash
-npm run dev          # Start dev server (localhost:3000)
-npm run build        # Production build (also runs TypeScript check)
-npm run lint         # ESLint
-npx vitest           # Unit tests
-npx playwright test  # E2E tests (requires dev server running)
+doppler run -- npm run dev     # Start dev server (localhost:3000)
+doppler run -- npm run build   # Production build (also runs TypeScript check)
+doppler run -- npm run lint    # ESLint
+doppler run -- npx vitest      # Unit tests
 ```
+
+Doppler is the source of truth for secrets — never create `.env.local` manually with secrets.
+
+Required secrets in Doppler (dev): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`
+Required secrets in Doppler (stg/prd): above plus `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Architecture
 
@@ -59,11 +66,23 @@ src/
 │   │   ├── calendar/
 │   │   ├── todos/
 │   │   ├── inventory/
-│   │   └── shopping/
+│   │   ├── shopping/
+│   │   └── settings/
+│   ├── onboarding/       # New user/household onboarding flow
 │   └── api/              # Server-side route handlers
 ├── components/
 │   ├── ui/               # shadcn/ui base components
 │   └── features/         # Feature-specific components
+│       ├── recipes/
+│       ├── todos/
+│       ├── calendar/
+│       ├── meal-plan/
+│       ├── shopping/
+│       ├── inventory/
+│       ├── members/      # Member management, picker
+│       ├── settings/     # API keys, staples, invites
+│       ├── dashboard/    # Dashboard widgets, week strip
+│       └── navigation/
 ├── lib/
 │   ├── supabase/         # Client + helpers
 │   ├── ai/               # Claude API (extraction boundary)
@@ -78,15 +97,23 @@ src/
 - **Vercel project:** `lennons301s-projects/lemons`
 - **Vercel CLI:** use `vercel ls`, `vercel logs <url>` to inspect deployments
 
-## Environment Isolation
+## Secrets & Environment Isolation
 
 **Never develop against the production database.**
 
 ```
-Local dev:     supabase start    → local Docker Postgres
-Preview/PR:    Vercel preview    → staging Supabase project (lemons-staging)
-Production:    Vercel production → production Supabase project
+Local dev:     Doppler dev config → local Docker Postgres (supabase start)
+Interlude:     Doppler stg config → staging Supabase project (lemons-staging)
+Preview/PR:    Vercel preview     → staging Supabase project (lemons-staging)
+Production:    Doppler prd config → production Supabase project
 ```
+
+**Doppler environments:**
+- `dev` — local Supabase instance, test API keys
+- `stg` — staging Supabase (lemons-staging). Used by Interlude agent containers and Vercel previews
+- `prd` — production Supabase. Synced to Vercel production env vars
+
+**Interlude agent setup:** Interlude stores a Doppler service token (scoped to `stg`) per project. On container start it pulls secrets from the Doppler API into `.env.local`. This means agents get the same secrets as Vercel preview deployments.
 
 - Migrations are developed and tested locally first
 - Verified on staging before production
@@ -113,8 +140,8 @@ Production:    Vercel production → production Supabase project
 ## Key Files
 
 - `docs/plans/` — Design docs and implementation plans
-- `supabase/migrations/` — Sequential numbered migrations (00001–00015+)
-- `src/components/features/` — Feature components organized by domain (recipes, todos, calendar, meal-plan, shopping, inventory, etc.)
+- `supabase/migrations/` — Sequential numbered migrations (00001–00015)
+- `src/components/features/` — Feature components organized by domain
 - `src/lib/utils/member-colors.ts` — Deterministic member color assignment
 - `src/lib/ai/extract-recipe.ts` — Claude API recipe extraction
 - `src/app/api/todos/[id]/clone/route.ts` — Clone endpoint for list templates
