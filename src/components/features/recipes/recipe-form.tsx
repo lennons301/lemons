@@ -354,14 +354,24 @@ export function RecipeForm({ householdId, persons = [], initialData }: RecipeFor
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <Label htmlFor="servings">Servings</Label>
-              <Input
-                id="servings"
-                type="number"
-                min={1}
-                value={servings}
-                onChange={(e) => setServings(parseInt(e.target.value) || 4)}
-              />
+              <Label>Servings</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setServings(Math.max(1, servings - 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center text-sm font-medium">{servings}</span>
+                <button
+                  type="button"
+                  onClick={() => setServings(servings + 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div>
               <Label htmlFor="prep">Prep (min)</Label>
