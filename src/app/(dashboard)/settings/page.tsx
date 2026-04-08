@@ -3,6 +3,7 @@ import { InviteLinkGenerator } from '@/components/features/settings/invite-link-
 import { ManagedMemberForm } from '@/components/features/members/managed-member-form'
 import { ApiKeySettings } from '@/components/features/settings/api-key-settings'
 import { StaplesManager } from '@/components/features/settings/staples-manager'
+import { WeekStartSettings } from '@/components/features/settings/week-start-settings'
 import { getPageContext } from '@/lib/supabase/queries'
 
 export default async function SettingsPage() {
@@ -48,6 +49,13 @@ export default async function SettingsPage() {
       {isAdmin && <InviteLinkGenerator householdId={householdId} />}
 
       {isAdmin && <ApiKeySettings householdId={householdId} />}
+
+      {isAdmin && (
+        <WeekStartSettings
+          householdId={householdId}
+          initialWeekStartDay={household?.week_start_day ?? 5}
+        />
+      )}
 
       <StaplesManager householdId={householdId} initialStaples={staples || []} />
     </div>

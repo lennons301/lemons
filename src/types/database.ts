@@ -198,6 +198,7 @@ export type Database = {
           created_by: string
           id: string
           name: string
+          week_start_day: number
         }
         Insert: {
           anthropic_api_key?: string | null
@@ -205,6 +206,7 @@ export type Database = {
           created_by: string
           id?: string
           name: string
+          week_start_day?: number
         }
         Update: {
           anthropic_api_key?: string | null
@@ -212,6 +214,7 @@ export type Database = {
           created_by?: string
           id?: string
           name?: string
+          week_start_day?: number
         }
         Relationships: [
           {
