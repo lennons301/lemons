@@ -6,18 +6,18 @@ import { ChevronLeft, ChevronRight, Copy, Calendar } from 'lucide-react'
 import { MealCell } from './meal-cell'
 import { AddMealDialog } from './add-meal-dialog'
 import { CopyWeekDialog } from './copy-week-dialog'
-import { getWeekStart, getWeekDays, formatWeekLabel, shiftWeek, MEAL_TYPES, type MealType } from '@/lib/utils/week'
+import { getWeekStart, getWeekDays, getOrderedDayNames, formatWeekLabel, shiftWeek, MEAL_TYPES, type MealType } from '@/lib/utils/week'
 import type { Person } from '@/types/person'
 
 interface WeeklyGridProps {
   householdId: string
   persons: Person[]
+  weekStartDay?: number
 }
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-export function WeeklyGrid({ householdId, persons }: WeeklyGridProps) {
-  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
+export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGridProps) {
+  const dayNames = getOrderedDayNames(weekStartDay)
+  const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(), weekStartDay))
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -139,7 +139,7 @@ export function WeeklyGrid({ householdId, persons }: WeeklyGridProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setWeekStart(getWeekStart(new Date()))}
+            onClick={() => setWeekStart(getWeekStart(new Date(), weekStartDay))}
           >
             <Calendar className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Today</span>
@@ -163,7 +163,7 @@ export function WeeklyGrid({ householdId, persons }: WeeklyGridProps) {
                 date === today ? 'bg-primary/10 text-primary' : ''
               }`}
             >
-              <div>{DAY_NAMES[i]}</div>
+              <div>{dayNames[i]}</div>
               <div className="text-xs text-muted-foreground">{new Date(date + 'T12:00:00').getDate()}</div>
             </div>
           ))}
@@ -198,7 +198,7 @@ export function WeeklyGrid({ householdId, persons }: WeeklyGridProps) {
         {weekDays.map((date, i) => (
           <div key={date} className={`rounded-lg border ${date === today ? 'border-primary' : ''}`}>
             <div className={`p-3 font-medium border-b ${date === today ? 'bg-primary/10' : 'bg-muted'}`}>
-              {DAY_NAMES[i]} {new Date(date + 'T12:00:00').getDate()}
+              {dayNames[i]} {new Date(date + 'T12:00:00').getDate()}
             </div>
             <div className="divide-y">
               {MEAL_TYPES.map((mealType) => {
