@@ -41,6 +41,7 @@ Required secrets in Doppler (stg/prd): above plus `SUPABASE_SERVICE_ROLE_KEY`
 If complexity grows — particularly around AI processing, complex business logic, or performance — the `src/app/api/` routes and `src/lib/` modules are the extraction boundary for a **Python FastAPI backend (Approach B)**.
 
 - `lib/ai/` — Claude API integration. First extraction candidate.
+  - `lib/ai/meal-plan/` — LLM-assisted meal plan generation (conversation loop, tools). Highest-value extraction target given token volume.
 - `lib/utils/` — Business logic (scaling, unit conversion, inventory matching). Second candidate.
 
 **To migrate to Approach B:**
@@ -136,6 +137,7 @@ Production:    Doppler prd config → production Supabase project
 - **Todo list templates** use `is_template` flag on `todo_lists`. Clone via `/api/todos/[id]/clone`. Templates are household-scoped.
 - **Item groups** use `group_name` on `todo_items`. UI supports collapsible sections or tabs (persisted in localStorage per list).
 - **Event-linked lists** use `event_id` FK on `todo_lists`. One list per event. Calendar events show linked list progress.
+- **Packet sizes** live in `packet_sizes` (global rows, `household_id IS NULL`) with optional household overrides. Seeded from `supabase/seed_data/packet_sizes_uk.json` via `supabase/migrations/00017_packet_sizes_seed.sql` (regenerate with `npx tsx scripts/generate-packet-sizes-migration.ts`).
 
 ## Key Files
 
