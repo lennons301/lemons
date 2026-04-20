@@ -167,3 +167,12 @@ create policy "household_delete" on public.packet_sizes
     household_id is not null
     and household_id in (select public.get_my_household_ids())
   );
+
+-- ============================================================
+-- meal_plan_entries: extend meal_has_source CHECK to allow leftover entries
+-- Original CHECK (from 00011) required recipe_id OR custom_name; leftover entries
+-- have only inventory_item_id set, so extend it.
+-- ============================================================
+alter table public.meal_plan_entries drop constraint meal_has_source;
+alter table public.meal_plan_entries add constraint meal_has_source
+  check (recipe_id is not null or custom_name is not null or inventory_item_id is not null);
