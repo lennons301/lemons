@@ -1,3 +1,5 @@
+import type { Json } from './database'
+
 export interface TodoList {
   id: string
   household_id: string
@@ -34,6 +36,7 @@ export interface TodoItem {
   created_by: string
   sort_order: number
   group_name?: string | null
+  metadata?: Json | null
   completed_at: string | null
   created_at: string
   updated_at: string

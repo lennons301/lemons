@@ -403,6 +403,8 @@ export type Database = {
           meal_type: string
           recipe_id: string | null
           custom_name: string | null
+          custom_ingredients: Json | null
+          inventory_item_id: string | null
           servings: number
           assigned_to: string[]
           created_by: string
@@ -418,6 +420,8 @@ export type Database = {
           meal_type: string
           recipe_id?: string | null
           custom_name?: string | null
+          custom_ingredients?: Json | null
+          inventory_item_id?: string | null
           servings?: number
           assigned_to?: string[]
           created_by: string
@@ -433,6 +437,8 @@ export type Database = {
           meal_type?: string
           recipe_id?: string | null
           custom_name?: string | null
+          custom_ingredients?: Json | null
+          inventory_item_id?: string | null
           servings?: number
           assigned_to?: string[]
           created_by?: string
@@ -454,6 +460,13 @@ export type Database = {
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
             referencedColumns: ["id"]
           },
           {
@@ -540,6 +553,7 @@ export type Database = {
           quantity: number | null
           unit: string | null
           tags: Json | null
+          metadata: Json | null
           created_at: string
           updated_at: string
         }
@@ -560,6 +574,7 @@ export type Database = {
           quantity?: number | null
           unit?: string | null
           tags?: Json | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -580,6 +595,7 @@ export type Database = {
           quantity?: number | null
           unit?: string | null
           tags?: Json | null
+          metadata?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -868,6 +884,174 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_gen_conversations: {
+        Row: {
+          id: string
+          household_id: string
+          created_by: string
+          week_start: string
+          messages: Json
+          status: 'active' | 'accepted' | 'abandoned'
+          accepted_at: string | null
+          last_activity_at: string
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          created_by: string
+          week_start: string
+          messages?: Json
+          status?: string
+          accepted_at?: string | null
+          last_activity_at?: string
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          created_by?: string
+          week_start?: string
+          messages?: Json
+          status?: string
+          accepted_at?: string | null
+          last_activity_at?: string
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_gen_conversations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_gen_conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_gen_drafts: {
+        Row: {
+          id: string
+          conversation_id: string
+          date: string
+          meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+          source: 'recipe' | 'custom' | 'custom_with_ingredients' | 'leftover'
+          recipe_id: string | null
+          inventory_item_id: string | null
+          custom_name: string | null
+          custom_ingredients: Json | null
+          servings: number
+          assigned_to: string[]
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          date: string
+          meal_type: string
+          source: string
+          recipe_id?: string | null
+          inventory_item_id?: string | null
+          custom_name?: string | null
+          custom_ingredients?: Json | null
+          servings?: number
+          assigned_to?: string[]
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          date?: string
+          meal_type?: string
+          source?: string
+          recipe_id?: string | null
+          inventory_item_id?: string | null
+          custom_name?: string | null
+          custom_ingredients?: Json | null
+          servings?: number
+          assigned_to?: string[]
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_gen_drafts_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "meal_gen_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_gen_drafts_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_gen_drafts_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packet_sizes: {
+        Row: {
+          id: string
+          ingredient_name: string
+          pack_quantity: number
+          pack_unit: string
+          locale: string
+          is_default: boolean
+          household_id: string | null
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ingredient_name: string
+          pack_quantity: number
+          pack_unit: string
+          locale?: string
+          is_default?: boolean
+          household_id?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ingredient_name?: string
+          pack_quantity?: number
+          pack_unit?: string
+          locale?: string
+          is_default?: boolean
+          household_id?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packet_sizes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
