@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Copy, Calendar } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Copy, Calendar, Sparkles } from 'lucide-react'
 import { MealCell } from './meal-cell'
 import { AddMealDialog } from './add-meal-dialog'
 import { CopyWeekDialog } from './copy-week-dialog'
+import { ChatDrawer } from './meal-gen/chat-drawer'
+import { RecentPlansDropdown } from './meal-gen/recent-plans-dropdown'
+import type { DraftRow } from './meal-gen/use-meal-gen-chat'
 import { getWeekStart, getWeekDays, getOrderedDayNames, formatWeekLabel, shiftWeek, MEAL_TYPES, type MealType } from '@/lib/utils/week'
 import type { Person } from '@/types/person'
 
@@ -13,9 +16,10 @@ interface WeeklyGridProps {
   householdId: string
   persons: Person[]
   weekStartDay?: number
+  mealGenEnabled?: boolean
 }
 
-export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGridProps) {
+export function WeeklyGrid({ householdId, persons, weekStartDay = 1, mealGenEnabled = false }: WeeklyGridProps) {
   const dayNames = getOrderedDayNames(weekStartDay)
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date(), weekStartDay))
   const [entries, setEntries] = useState<any[]>([])
@@ -27,6 +31,12 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
   const [addDialogMealType, setAddDialogMealType] = useState<MealType>('dinner')
   const [editingEntry, setEditingEntry] = useState<any | null>(null)
   const [copyDialogOpen, setCopyDialogOpen] = useState(false)
+
+  // Meal-gen state
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [resumeConversationId, setResumeConversationId] = useState<string | null>(null)
+  const [drafts, setDrafts] = useState<DraftRow[]>([])
+  const [recipeTitleById, setRecipeTitleById] = useState<Record<string, string>>({})
 
   const weekDays = getWeekDays(weekStart)
   const weekEnd = weekDays[6]
@@ -49,6 +59,33 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
   useEffect(() => {
     fetchEntries()
   }, [fetchEntries])
+
+  // Fetch titles for any draft recipe_ids we don't yet have cached.
+  useEffect(() => {
+    const missing = drafts
+      .filter((d) => d.source === 'recipe' && d.recipe_id && !recipeTitleById[d.recipe_id])
+      .map((d) => d.recipe_id as string)
+    if (missing.length === 0) return
+    let cancelled = false
+    ;(async () => {
+      const fetched: Array<{ id: string; title: string }> = []
+      for (const id of missing) {
+        const res = await fetch(`/api/recipes/${id}`)
+        if (!res.ok) continue
+        const body = await res.json()
+        if (body?.id && body?.title) fetched.push({ id: body.id, title: body.title })
+      }
+      if (cancelled || fetched.length === 0) return
+      setRecipeTitleById((prev) => {
+        const next = { ...prev }
+        for (const r of fetched) next[r.id] = r.title
+        return next
+      })
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [drafts, recipeTitleById])
 
   const handleAdd = (date: string, mealType: MealType) => {
     setEditingEntry(null)
@@ -118,6 +155,9 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
   const getEntriesForCell = (date: string, mealType: string) =>
     entries.filter((e) => e.date === date && e.meal_type === mealType)
 
+  const getDraftsForCell = (date: string, mealType: string) =>
+    drafts.filter((d) => d.date === date && d.meal_type === mealType)
+
   const today = new Date().toISOString().split('T')[0]
 
   return (
@@ -148,6 +188,27 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
             <Copy className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Copy Week</span>
           </Button>
+          {mealGenEnabled ? (
+            <>
+              <RecentPlansDropdown
+                householdId={householdId}
+                onResume={(id) => {
+                  setResumeConversationId(id)
+                  setDrawerOpen(true)
+                }}
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  setResumeConversationId(null)
+                  setDrawerOpen(true)
+                }}
+              >
+                <Sparkles className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Generate plan</span>
+              </Button>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -181,6 +242,8 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
                 >
                   <MealCell
                     entries={getEntriesForCell(date, mealType)}
+                    drafts={getDraftsForCell(date, mealType)}
+                    recipeTitleById={recipeTitleById}
                     persons={persons}
                     onAdd={() => handleAdd(date, mealType)}
                     onEdit={handleEdit}
@@ -203,6 +266,7 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
             <div className="divide-y">
               {MEAL_TYPES.map((mealType) => {
                 const cellEntries = getEntriesForCell(date, mealType)
+                const cellDrafts = getDraftsForCell(date, mealType)
                 return (
                   <div key={mealType} className="p-2">
                     <div className="text-xs font-medium text-muted-foreground uppercase mb-1">
@@ -210,6 +274,8 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
                     </div>
                     <MealCell
                       entries={cellEntries}
+                      drafts={cellDrafts}
+                      recipeTitleById={recipeTitleById}
                       persons={persons}
                       onAdd={() => handleAdd(date, mealType)}
                       onEdit={handleEdit}
@@ -241,6 +307,21 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1 }: WeeklyGri
         currentWeekStart={weekStart}
         onCopy={handleCopyWeek}
       />
+
+      {mealGenEnabled ? (
+        <ChatDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          householdId={householdId}
+          weekStart={weekDays[0]}
+          resumeConversationId={resumeConversationId}
+          onDraftsChange={setDrafts}
+          onAccepted={() => {
+            setDrafts([])
+            fetchEntries()
+          }}
+        />
+      ) : null}
     </div>
   )
 }
