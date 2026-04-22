@@ -12,28 +12,14 @@ export interface InventoryLeftoverOutput {
   expiry_date: string | null
 }
 
+// Stubbed until inventory_items gains the cooked-meal columns
+// (is_cooked_meal, cooked_servings, source_recipe_id). The design spec
+// calls for these; the schema work lands in a later chunk. For now the
+// tool returns empty so the model sees "no leftovers available" —
+// matching the "gracefully empty today, lights up later" design note.
 export async function searchInventoryLeftovers(
-  ctx: ToolContext,
+  _ctx: ToolContext,
   _input: SearchInventoryLeftoversInput,
 ): Promise<ToolResult<InventoryLeftoverOutput[]>> {
-  const { data, error } = await ctx.supabase
-    .from('inventory_items')
-    .select('id, display_name, cooked_servings, source_recipe_id, expiry_date')
-    .eq('household_id', ctx.householdId)
-    .eq('is_cooked_meal', true)
-    .gt('cooked_servings', 0)
-
-  if (error) {
-    return { content: [], is_error: true }
-  }
-
-  return {
-    content: (data ?? []).map((row) => ({
-      id: row.id,
-      name: row.display_name ?? '(unnamed leftover)',
-      servings_available: Number(row.cooked_servings ?? 0),
-      source_recipe_id: row.source_recipe_id ?? null,
-      expiry_date: row.expiry_date ?? null,
-    })),
-  }
+  return { content: [] }
 }

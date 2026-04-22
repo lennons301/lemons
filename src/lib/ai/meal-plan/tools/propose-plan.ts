@@ -1,4 +1,5 @@
 import type { ToolContext, ToolResult, ProposedEntry } from '../types'
+import type { Json } from '@/types/database'
 
 export interface ProposePlanInput {
   entries: ProposedEntry[]
@@ -44,7 +45,7 @@ export async function proposePlan(
     recipe_id: e.source === 'recipe' ? e.recipe_id! : null,
     inventory_item_id: e.source === 'leftover' ? e.inventory_item_id! : null,
     custom_name: (e.source === 'custom' || e.source === 'custom_with_ingredients') ? e.custom_name! : null,
-    custom_ingredients: e.source === 'custom_with_ingredients' ? (e.custom_ingredients as unknown) : null,
+    custom_ingredients: e.source === 'custom_with_ingredients' ? (e.custom_ingredients as unknown as Json) : null,
     servings: e.servings ?? 1,
     assigned_to: e.assigned_to ?? [],
     notes: e.notes ?? null,
