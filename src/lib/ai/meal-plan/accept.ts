@@ -53,13 +53,24 @@ export async function acceptConversation(
 
   if (insertError) throw new Error(`Failed to insert meal plan entries: ${insertError.message}`)
 
-  await supabase
+  // Known v1 limitation: the insert above and the status update below are not in a
+  // single transaction. If the update fails, entries exist but the conversation stays
+  // active — retrying hits the "already in status" / duplicate-slot path. Chunk 4 is
+  // the natural place to move this into a Postgres RPC so shopping-list generation can
+  // also be wrapped atomically.
+  const { error: updateError } = await supabase
     .from('meal_gen_conversations')
     .update({
       status: 'accepted',
       accepted_at: new Date().toISOString(),
     })
     .eq('id', conversationId)
+
+  if (updateError) {
+    throw new Error(
+      `meal_plan_entries inserted but failed to mark conversation accepted: ${updateError.message}`,
+    )
+  }
 
   return { inserted_ids: (inserted ?? []).map((r) => r.id) }
 }

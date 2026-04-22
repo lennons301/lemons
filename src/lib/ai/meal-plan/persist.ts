@@ -2,6 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Json } from '@/types/database'
 import type { MealGenMessage } from '@/types/meal-gen'
 
+// Known v1 limitation: this is a read-modify-write on the messages jsonb with no
+// optimistic lock. Two concurrent writers on the same conversation (e.g. an in-flight
+// /message POST and a PATCH /draft from the grid) can lose one side's append. The UI
+// serializes its own writes and the /message route 409s on non-active status, so in
+// practice the collision window is narrow. Chunk 4 (or whoever tightens accept
+// atomicity) should consider moving to an RPC / optimistic concurrency via updated_at.
 export async function appendMessages(
   supabase: SupabaseClient<Database>,
   conversationId: string,
