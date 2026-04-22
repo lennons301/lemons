@@ -19,7 +19,13 @@ export function MessageInput({ onSend, disabled, showSuggestions }: Props) {
     const trimmed = value.trim()
     if (!trimmed) return
     setText('')
-    await onSend(trimmed)
+    try {
+      await onSend(trimmed)
+    } catch {
+      // Restore the text so the user can retry. The hook also rolls back the
+      // optimistic user-message bubble so they see a clean re-send path.
+      setText(trimmed)
+    }
   }
 
   return (
@@ -48,7 +54,7 @@ export function MessageInput({ onSend, disabled, showSuggestions }: Props) {
           className="flex-1 resize-none"
           disabled={disabled}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault()
               submit(text)
             }
