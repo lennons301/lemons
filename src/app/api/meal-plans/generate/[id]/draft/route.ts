@@ -16,7 +16,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
 
   const body = await request.json().catch(() => null) as {
     date?: string
-    meal_type?: string
+    meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack'
     update?: Record<string, unknown>
     action?: 'update' | 'delete'
   } | null
@@ -25,13 +25,15 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
     return NextResponse.json({ error: 'date, meal_type, and action are required' }, { status: 400 })
   }
 
+  const mealType = body.meal_type
+
   if (body.action === 'delete') {
     const { error } = await supabase
       .from('meal_gen_drafts')
       .delete()
       .eq('conversation_id', id)
       .eq('date', body.date)
-      .eq('meal_type', body.meal_type)
+      .eq('meal_type', mealType)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   } else {
     if (!body.update) return NextResponse.json({ error: 'update payload required for action=update' }, { status: 400 })
@@ -40,7 +42,7 @@ export async function PATCH(request: NextRequest, ctx: { params: Promise<{ id: s
       .update(body.update)
       .eq('conversation_id', id)
       .eq('date', body.date)
-      .eq('meal_type', body.meal_type)
+      .eq('meal_type', mealType)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
