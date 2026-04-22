@@ -91,7 +91,7 @@ export function ChatDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex w-full flex-col sm:max-w-xl"
+        className="flex w-full flex-col sm:max-w-xl sm:w-[min(32rem,90vw)]"
       >
         <SheetHeader>
           <div className="flex items-center justify-between">
@@ -99,9 +99,19 @@ export function ChatDrawer({
               <Sparkles className="h-5 w-5" />
               Plan for week of {weekStart}
             </SheetTitle>
-            <Badge variant={chat.status === 'active' ? 'default' : 'secondary'}>
-              {chat.status ?? 'loading…'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={chat.status === 'active' ? 'default' : 'secondary'}>
+                {chat.status ?? 'loading…'}
+              </Badge>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="sm:hidden"
+                onClick={() => onOpenChange(false)}
+              >
+                Show plan
+              </Button>
+            </div>
           </div>
         </SheetHeader>
 
