@@ -17,11 +17,17 @@ export default async function MealPlansPage() {
   ])
 
   const weekStartDay = household?.week_start_day ?? 5
+  const mealGenEnabled = process.env.MEAL_GEN_ENABLED === 'true'
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Meal Plans</h1>
-      <WeeklyGrid householdId={householdId} persons={persons || []} weekStartDay={weekStartDay} />
+      <WeeklyGrid
+        householdId={householdId}
+        persons={persons || []}
+        weekStartDay={weekStartDay}
+        mealGenEnabled={mealGenEnabled}
+      />
     </div>
   )
 }
