@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest'
 import { getRecipe } from './get-recipe'
 import type { ToolContext } from '../types'

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest'
 import { dispatchTool, TOOL_REGISTRY } from './index'
 import type { ToolContext } from '../types'

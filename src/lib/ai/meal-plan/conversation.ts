@@ -1,3 +1,6 @@
+// Interop with Anthropic SDK response shapes requires `any` at boundaries —
+// tightening this is a follow-up once the SDK typings stabilize for tool-use blocks.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Anthropic from '@anthropic-ai/sdk'
 import type { MealGenMessage, MealGenToolName } from '@/types/meal-gen'
 import type { ToolContext, TurnResult } from './types'

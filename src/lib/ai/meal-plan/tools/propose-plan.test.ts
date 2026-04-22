@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest'
 import { proposePlan } from './propose-plan'
 import type { ToolContext } from '../types'

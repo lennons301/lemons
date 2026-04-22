@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ToolContext, ToolResult } from '../types'
 
 export interface SearchInventoryLeftoversInput {

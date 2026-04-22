@@ -25,7 +25,7 @@ export async function checkPacketSizes(
     .order('is_default', { ascending: false })
 
   if (error) {
-    return { content: [{ name: 'error', packs: [] }] as any, is_error: true }
+    return { content: [], is_error: true }
   }
 
   const byName = new Map<string, PacketSizesOutput>()

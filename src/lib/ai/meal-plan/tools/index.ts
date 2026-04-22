@@ -1,3 +1,6 @@
+// Tool dispatcher: input is `unknown` at the SDK boundary and narrowed by
+// each tool's own input validation.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { MealGenToolName } from '@/types/meal-gen'
 import type { ToolContext, ToolResult } from '../types'
 import { checkPacketSizes } from './check-packet-sizes'
