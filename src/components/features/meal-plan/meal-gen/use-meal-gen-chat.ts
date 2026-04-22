@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { MealGenMessage } from '@/types/meal-gen'
 
 type ConversationStatus = 'active' | 'accepted' | 'abandoned' | null
@@ -81,8 +81,12 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
         body: JSON.stringify({ text }),
       })
       if (!res.ok) {
-        setError(await readError(res, 'Model turn failed'))
-        return
+        // Roll back the optimistic user message so MessageInput can restore
+        // the text and the user can retry cleanly.
+        setMessages((prev) => (prev[prev.length - 1] === optimisticUser ? prev.slice(0, -1) : prev))
+        const errMsg = await readError(res, 'Model turn failed')
+        setError(errMsg)
+        throw new Error(errMsg)
       }
       const body = await res.json()
       setMessages((prev) => [...prev, ...(body.assistantMessages as MealGenMessage[])])
@@ -136,18 +140,36 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
     setError(null)
   }, [])
 
-  return {
-    conversationId,
-    messages,
-    drafts,
-    status,
-    sending,
-    error,
-    start,
-    send,
-    accept,
-    discard,
-    resume,
-    reset,
-  }
+  // Stable object identity — protects consumer effects that depend on `chat`
+  // from firing on every render while state is unchanged.
+  return useMemo(
+    () => ({
+      conversationId,
+      messages,
+      drafts,
+      status,
+      sending,
+      error,
+      start,
+      send,
+      accept,
+      discard,
+      resume,
+      reset,
+    }),
+    [
+      conversationId,
+      messages,
+      drafts,
+      status,
+      sending,
+      error,
+      start,
+      send,
+      accept,
+      discard,
+      resume,
+      reset,
+    ],
+  )
 }
