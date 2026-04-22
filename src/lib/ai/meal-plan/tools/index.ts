@@ -13,7 +13,7 @@ import { scrapeAndSaveRecipe } from './scrape-and-save-recipe'
 
 export type ToolImpl = (ctx: ToolContext, input: any) => Promise<ToolResult>
 
-export const TOOL_REGISTRY: Record<Exclude<MealGenToolName, 'search_web'>, ToolImpl> = {
+export const TOOL_REGISTRY: Record<MealGenToolName, ToolImpl> = {
   check_packet_sizes: checkPacketSizes as ToolImpl,
   get_recipe: getRecipe as ToolImpl,
   search_inventory_leftovers: searchInventoryLeftovers as ToolImpl,
@@ -24,17 +24,11 @@ export const TOOL_REGISTRY: Record<Exclude<MealGenToolName, 'search_web'>, ToolI
 }
 
 export async function dispatchTool(
-  name: MealGenToolName,
+  name: MealGenToolName | string,
   ctx: ToolContext,
   input: unknown,
   registry: Record<string, ToolImpl> = TOOL_REGISTRY,
 ): Promise<ToolResult> {
-  if (name === 'search_web') {
-    return {
-      content: { error: 'search_web is handled server-side by Anthropic; should not reach dispatchTool' },
-      is_error: true,
-    }
-  }
   const impl = registry[name]
   if (!impl) {
     return { content: { error: `Unknown tool: ${name}` }, is_error: true }

@@ -113,8 +113,10 @@ export async function runTurn(
 }
 
 // Convert our stored envelope back to the SDK message format when replaying history.
+// Known lossy: text/tool_use interleaving is reconstructed as text-first-then-tool_uses.
+// Good enough for replay; full fidelity would require storing raw SDK blocks.
 function envelopeToSdk(msg: MealGenMessage): any {
-  if (msg.role === 'user' || msg.role === 'system') {
+  if (msg.role === 'user') {
     return { role: 'user', content: msg.content }
   }
   if (msg.role === 'assistant') {
@@ -125,14 +127,12 @@ function envelopeToSdk(msg: MealGenMessage): any {
     }
     return { role: 'assistant', content }
   }
-  if (msg.role === 'tool') {
-    const content = (msg.tool_results ?? []).map((tr) => ({
-      type: 'tool_result',
-      tool_use_id: tr.tool_call_id,
-      content: typeof tr.content === 'string' ? tr.content : JSON.stringify(tr.content),
-      is_error: tr.is_error ?? false,
-    }))
-    return { role: 'user', content }
-  }
-  return { role: 'user', content: msg.content }
+  // role === 'tool'
+  const content = (msg.tool_results ?? []).map((tr) => ({
+    type: 'tool_result',
+    tool_use_id: tr.tool_call_id,
+    content: typeof tr.content === 'string' ? tr.content : JSON.stringify(tr.content),
+    is_error: tr.is_error ?? false,
+  }))
+  return { role: 'user', content }
 }
