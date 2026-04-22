@@ -60,3 +60,6 @@ export type MealGenDraftSource =
   | 'custom'
   | 'custom_with_ingredients'
   | 'leftover'
+
+// Re-export internal types for convenience
+export type { ToolContext, ToolResult, ProposedEntry, TurnResult } from '@/lib/ai/meal-plan/types'
