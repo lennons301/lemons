@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Sparkles, X } from 'lucide-react'
 import {
   Sheet,
@@ -40,9 +40,16 @@ export function ChatDrawer({
   const [accepting, setAccepting] = useState(false)
 
   // Bootstrap on open: resume if id provided, else start fresh.
+  // startedRef guards against the hook re-identifying (via useMemo deps that
+  // change on error/state updates) and firing a duplicate start/resume.
+  const startedRef = useRef(false)
   useEffect(() => {
-    if (!open) return
-    if (chat.conversationId) return
+    if (!open) {
+      startedRef.current = false
+      return
+    }
+    if (startedRef.current) return
+    startedRef.current = true
     if (resumeConversationId) {
       void chat.resume(resumeConversationId)
     } else {
