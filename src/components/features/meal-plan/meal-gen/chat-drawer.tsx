@@ -99,6 +99,10 @@ export function ChatDrawer({
       <SheetContent
         side="right"
         className="flex w-full flex-col sm:max-w-xl sm:w-[min(32rem,90vw)]"
+        // Guard against accidental loss of in-flight conversation state.
+        // Explicit closes still work via the built-in X, Discard, and Accept.
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <SheetHeader>
           <div className="flex items-center justify-between">
