@@ -63,11 +63,12 @@ export function ChatDrawer({
     onDraftsChange(chat.drafts)
   }, [chat.drafts, onDraftsChange])
 
-  // Refresh shopping preview whenever drafts change.
+  // Refresh shopping preview whenever drafts change. `chat` is useMemo-stable
+  // so depending on the whole object is cheaper than listing every accessed field.
   useEffect(() => {
     if (chat.drafts.length === 0) return
     void chat.refreshShoppingPreview()
-  }, [chat.drafts, chat.refreshShoppingPreview])
+  }, [chat])
 
   // Surface errors via toast.
   useEffect(() => {
