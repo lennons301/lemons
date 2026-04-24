@@ -122,4 +122,24 @@ describe('useMealGenChat', () => {
     expect(result.current.status).toBe('active')
     expect(result.current.messages).toHaveLength(2)
   })
+
+  it('refreshShoppingPreview() fetches and stores the preview', async () => {
+    mockFetchSequence([
+      { ok: true, body: { id: 'c1', status: 'active' } },
+      {
+        ok: true,
+        body: {
+          items: [
+            { name: 'carrot', required_qty: 600, required_unit: 'g', packed_qty: 1000, packed_unit: 'g', waste_qty: 400, pack_size: { quantity: 1, unit: 'kg' }, pack_count: 1, is_staple: false },
+          ],
+          totals: { line_count: 1, waste_qty_total: 400, pack_total: 1 },
+        },
+      },
+    ])
+    const { result } = renderHook(() => useMealGenChat({ household_id, week_start }))
+    await act(async () => { await result.current.start() })
+    await act(async () => { await result.current.refreshShoppingPreview() })
+    expect(result.current.shoppingPreview?.items).toHaveLength(1)
+    expect(result.current.shoppingPreview?.totals.line_count).toBe(1)
+  })
 })

@@ -2,6 +2,18 @@
 import { describe, it, expect, vi } from 'vitest'
 import { acceptConversation } from './accept'
 
+const { mockBuildShopping } = vi.hoisted(() => ({
+  mockBuildShopping: vi.fn(() =>
+    Promise.resolve({
+      items: [
+        { name: 'carrot', required_qty: 600, required_unit: 'g', packed_qty: 1000, packed_unit: 'g', waste_qty: 400, pack_size: { quantity: 1, unit: 'kg' }, pack_count: 1, is_staple: false },
+      ],
+      totals: { line_count: 1, waste_qty_total: 400, pack_total: 1 },
+    }),
+  ),
+}))
+vi.mock('./shopping-for-drafts', () => ({ buildShoppingFromDrafts: mockBuildShopping }))
+
 function fakeContext(params: {
   conversation: any
   drafts: any[]
@@ -14,6 +26,8 @@ function fakeContext(params: {
   }))
   const updateChain = vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: null })) }))
   const deleteChain = vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: null })) }))
+  const listInsertSingle = vi.fn(() => Promise.resolve({ data: { id: 'tl1' }, error: null }))
+  const itemsInsert = vi.fn(() => Promise.resolve({ data: null, error: null }))
 
   const supabase: any = {
     from: vi.fn((t: string) => {
@@ -32,16 +46,26 @@ function fakeContext(params: {
       if (t === 'meal_plan_entries') {
         return { insert: insertRows }
       }
+      if (t === 'todo_lists') {
+        return {
+          insert: () => ({
+            select: () => ({ single: listInsertSingle }),
+          }),
+        }
+      }
+      if (t === 'todo_items') {
+        return { insert: itemsInsert }
+      }
       throw new Error('unexpected table ' + t)
     }),
   }
-  return { supabase, insertRows, updateChain }
+  return { supabase, insertRows, updateChain, listInsertSingle, itemsInsert }
 }
 
 describe('acceptConversation', () => {
   it('promotes each draft to a meal_plan_entries row with correct mapping by source', async () => {
     const { supabase, insertRows, updateChain } = fakeContext({
-      conversation: { id: 'c1', household_id: 'h1', status: 'active' },
+      conversation: { id: 'c1', household_id: 'h1', status: 'active', week_start: '2026-04-20' },
       drafts: [
         { id: 'd1', date: '2026-04-22', meal_type: 'dinner', source: 'recipe', recipe_id: 'r1', inventory_item_id: null, custom_name: null, custom_ingredients: null, servings: 4, assigned_to: [], notes: null },
         { id: 'd2', date: '2026-04-23', meal_type: 'dinner', source: 'custom', recipe_id: null, inventory_item_id: null, custom_name: 'Takeaway', custom_ingredients: null, servings: 4, assigned_to: [], notes: 'pizza night' },
@@ -80,5 +104,18 @@ describe('acceptConversation', () => {
       drafts: [],
     })
     await expect(acceptConversation(supabase, 'c1', 'u1')).rejects.toThrow(/no drafts/i)
+  })
+
+  it('creates a shopping todo_list + items alongside meal_plan_entries', async () => {
+    const { supabase, listInsertSingle, itemsInsert } = fakeContext({
+      conversation: { id: 'c1', household_id: 'h1', status: 'active', week_start: '2026-04-20' },
+      drafts: [
+        { id: 'd1', date: '2026-04-22', meal_type: 'dinner', source: 'recipe', recipe_id: 'r1', inventory_item_id: null, custom_name: null, custom_ingredients: null, servings: 4, assigned_to: [], notes: null },
+      ],
+    })
+    const result = await acceptConversation(supabase, 'c1', 'u1')
+    expect(listInsertSingle).toHaveBeenCalledOnce()
+    expect(itemsInsert).toHaveBeenCalledOnce()
+    expect(result.shopping_list_id).toBe('tl1')
   })
 })

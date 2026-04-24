@@ -15,6 +15,7 @@ import { useMealGenChat, type DraftRow } from './use-meal-gen-chat'
 import { MessageList } from './message-list'
 import { MessageInput } from './message-input'
 import { AcceptPlanModal } from './accept-plan-modal'
+import { ShoppingPreview } from './shopping-preview'
 
 interface Props {
   open: boolean
@@ -61,6 +62,16 @@ export function ChatDrawer({
   useEffect(() => {
     onDraftsChange(chat.drafts)
   }, [chat.drafts, onDraftsChange])
+
+  // Refresh shopping preview whenever drafts change. Depending on the whole
+  // `chat` object would loop: useMemo re-identifies on any state change
+  // (including previewLoading / shoppingPreview), and this effect mutates both.
+  // Use the specific fields; refreshShoppingPreview is useCallback-stable.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (chat.drafts.length === 0) return
+    void chat.refreshShoppingPreview()
+  }, [chat.drafts, chat.refreshShoppingPreview])
 
   // Surface errors via toast.
   useEffect(() => {
@@ -134,6 +145,14 @@ export function ChatDrawer({
           showSuggestions={chat.messages.length === 0}
         />
 
+        {chat.shoppingPreview && chat.drafts.length >= 3 ? (
+          <ShoppingPreview
+            items={chat.shoppingPreview.items}
+            totals={chat.shoppingPreview.totals}
+            loading={chat.previewLoading}
+          />
+        ) : null}
+
         <div className="flex items-center justify-between gap-2 border-t p-3">
           <Button variant="ghost" size="sm" onClick={handleDiscard} disabled={chat.status !== 'active'}>
             <X className="h-4 w-4 mr-1" /> Discard
@@ -152,6 +171,7 @@ export function ChatDrawer({
           open={acceptOpen}
           onOpenChange={setAcceptOpen}
           draftCount={chat.drafts.length}
+          shoppingItemCount={chat.shoppingPreview?.totals.line_count}
           onConfirm={handleAccept}
           confirming={accepting}
         />

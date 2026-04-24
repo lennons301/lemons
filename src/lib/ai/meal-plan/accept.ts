@@ -1,8 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Json } from '@/types/database'
+import { buildShoppingFromDrafts } from './shopping-for-drafts'
 
 export interface AcceptResult {
   inserted_ids: string[]
+  shopping_list_id: string | null
+  shopping_item_count: number
 }
 
 export async function acceptConversation(
@@ -12,7 +15,7 @@ export async function acceptConversation(
 ): Promise<AcceptResult> {
   const { data: conversation } = await supabase
     .from('meal_gen_conversations')
-    .select('id, household_id, status')
+    .select('id, household_id, status, week_start')
     .eq('id', conversationId)
     .maybeSingle()
 
@@ -53,11 +56,53 @@ export async function acceptConversation(
 
   if (insertError) throw new Error(`Failed to insert meal plan entries: ${insertError.message}`)
 
-  // Known v1 limitation: the insert above and the status update below are not in a
-  // single transaction. If the update fails, entries exist but the conversation stays
-  // active — retrying hits the "already in status" / duplicate-slot path. Chunk 4 is
-  // the natural place to move this into a Postgres RPC so shopping-list generation can
-  // also be wrapped atomically.
+  // Generate the shopping list. This is best-effort — if shopping generation
+  // fails we still consider the accept successful (entries exist) but return
+  // shopping_list_id: null so the UI can surface a retry option.
+  let shopping_list_id: string | null = null
+  let shopping_item_count = 0
+  try {
+    const shopping = await buildShoppingFromDrafts(supabase, conversationId)
+    if (shopping && shopping.items.length > 0) {
+      const { data: list, error: listError } = await supabase
+        .from('todo_lists')
+        .insert({
+          household_id: conversation.household_id,
+          title: `Shopping — week of ${conversation.week_start}`,
+          list_type: 'shopping',
+          created_by: userId,
+        })
+        .select('id')
+        .single()
+
+      if (!listError && list) {
+        const itemRows = shopping.items.map((item, index) => ({
+          list_id: list.id,
+          title: item.name,
+          quantity: item.packed_qty,
+          unit: item.packed_unit,
+          sort_order: index,
+          created_by: userId,
+          metadata: {
+            required_qty: item.required_qty,
+            packed_qty: item.packed_qty,
+            waste_qty: item.waste_qty,
+            pack_size: item.pack_size,
+            pack_count: item.pack_count,
+            is_staple: item.is_staple,
+          } as unknown as Json,
+        }))
+        const { error: itemsError } = await supabase.from('todo_items').insert(itemRows)
+        if (!itemsError) {
+          shopping_list_id = list.id
+          shopping_item_count = itemRows.length
+        }
+      }
+    }
+  } catch {
+    // swallow — shopping list is optional on accept
+  }
+
   const { error: updateError } = await supabase
     .from('meal_gen_conversations')
     .update({
@@ -72,5 +117,5 @@ export async function acceptConversation(
     )
   }
 
-  return { inserted_ids: (inserted ?? []).map((r) => r.id) }
+  return { inserted_ids: (inserted ?? []).map((r) => r.id), shopping_list_id, shopping_item_count }
 }
