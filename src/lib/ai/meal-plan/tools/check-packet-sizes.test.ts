@@ -22,9 +22,9 @@ function fakeContext(rows: any[]) {
 describe('checkPacketSizes', () => {
   it('groups rows by ingredient and returns compact output', async () => {
     const ctx = fakeContext([
-      { ingredient_name: 'carrot', pack_quantity: 1, pack_unit: 'kg', is_default: true },
-      { ingredient_name: 'carrot', pack_quantity: 500, pack_unit: 'g', is_default: false },
-      { ingredient_name: 'onion', pack_quantity: 3, pack_unit: 'ct', is_default: true },
+      { ingredient_name: 'carrot', pack_quantity: 1, pack_unit: 'kg', is_default: true, household_id: null },
+      { ingredient_name: 'carrot', pack_quantity: 500, pack_unit: 'g', is_default: false, household_id: null },
+      { ingredient_name: 'onion', pack_quantity: 3, pack_unit: 'ct', is_default: true, household_id: null },
     ])
     const result = await checkPacketSizes(ctx, { ingredient_names: ['carrot', 'onion'] })
     expect(result.content).toEqual([
@@ -43,5 +43,21 @@ describe('checkPacketSizes', () => {
     const ctx = fakeContext([])
     const result = await checkPacketSizes(ctx, { ingredient_names: ['dragonfruit'] })
     expect(result.content).toEqual([{ name: 'dragonfruit', packs: [] }])
+  })
+
+  it('prefers household override packs over globals for the same ingredient', async () => {
+    const ctx = fakeContext([
+      { ingredient_name: 'onion', pack_quantity: 3, pack_unit: 'ct', is_default: true, household_id: null },
+      { ingredient_name: 'onion', pack_quantity: 5, pack_unit: 'ct', is_default: true, household_id: 'h1' },
+    ])
+    const result = await checkPacketSizes(ctx, { ingredient_names: ['onion'] })
+    expect(result.content).toEqual([
+      {
+        name: 'onion',
+        packs: [
+          { quantity: 5, unit: 'ct', is_default: true },
+        ],
+      },
+    ])
   })
 })
