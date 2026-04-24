@@ -18,7 +18,10 @@ export function MessageList({ messages, sending }: Props) {
   }, [messages.length, sending])
 
   return (
-    <ScrollArea className="flex-1 pr-2">
+    // `min-h-0` is load-bearing: in a flex-col parent, flex-1 alone defaults to
+    // `min-height: auto`, which lets the ScrollArea grow past the viewport instead
+    // of clipping and scrolling. Keep min-h-0 or the drawer overflows.
+    <ScrollArea className="flex-1 min-h-0 pr-2">
       <div className="flex flex-col gap-3 p-3">
         {messages.map((m, idx) => (
           <MessageBubble key={idx} message={m} />
