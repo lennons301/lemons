@@ -14,18 +14,23 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   draftCount: number
+  shoppingItemCount?: number
   onConfirm: () => void | Promise<void>
   confirming?: boolean
 }
 
-export function AcceptPlanModal({ open, onOpenChange, draftCount, onConfirm, confirming }: Props) {
+export function AcceptPlanModal({ open, onOpenChange, draftCount, shoppingItemCount, onConfirm, confirming }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Accept plan?</DialogTitle>
           <DialogDescription>
-            This will create {draftCount} meal plan {draftCount === 1 ? 'entry' : 'entries'} for the target week.
+            This will create {draftCount} meal plan {draftCount === 1 ? 'entry' : 'entries'} for the target week
+            {typeof shoppingItemCount === 'number' && shoppingItemCount > 0
+              ? ` and a shopping list with ${shoppingItemCount} ${shoppingItemCount === 1 ? 'item' : 'items'}`
+              : ''}
+            .
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

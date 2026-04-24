@@ -167,6 +167,7 @@ export function ChatDrawer({
           open={acceptOpen}
           onOpenChange={setAcceptOpen}
           draftCount={chat.drafts.length}
+          shoppingItemCount={chat.shoppingPreview?.totals.line_count}
           onConfirm={handleAccept}
           confirming={accepting}
         />
