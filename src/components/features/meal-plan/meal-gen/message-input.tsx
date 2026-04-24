@@ -49,7 +49,7 @@ export function MessageInput({ onSend, disabled, showSuggestions }: Props) {
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Describe your week…"
+          placeholder="Describe your week… (Enter to send, Shift+Enter for newline)"
           rows={2}
           className="flex-1 resize-none"
           disabled={disabled}

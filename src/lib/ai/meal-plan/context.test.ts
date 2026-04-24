@@ -27,7 +27,7 @@ describe('loadConversationContext', () => {
       households: {
         select: () => ({
           eq: () => ({
-            maybeSingle: () => Promise.resolve({
+            single: () => Promise.resolve({
               data: { anthropic_api_key: 'sk-test' },
               error: null,
             }),

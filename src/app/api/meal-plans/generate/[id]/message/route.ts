@@ -32,6 +32,9 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
   if (loaded.conversation.status !== 'active') {
     return NextResponse.json({ error: `Conversation is ${loaded.conversation.status}` }, { status: 409 })
   }
+  // No preflight on apiKey — runTurn passes undefined through to the Anthropic
+  // SDK, which falls back to ANTHROPIC_API_KEY from the environment. This mirrors
+  // /api/recipes/extract, which has relied on the env fallback since launch.
 
   const prior = (loaded.conversation.messages as unknown as MealGenMessage[] | null) ?? []
   if (isConversationAtMessageCap(prior)) {
