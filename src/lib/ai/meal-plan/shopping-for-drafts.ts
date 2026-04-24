@@ -93,8 +93,13 @@ export async function buildShoppingFromDrafts(
 
   const aggregated = aggregateIngredients(items)
 
-  // Collect unique ingredient names to pre-fetch packet sizes.
-  const uniqueNames = Array.from(new Set(aggregated.map((a) => a.name)))
+  // Collect unique ingredient names to pre-fetch packet sizes. Include both
+  // names from aggregated ingredients AND staples so staples that aren't in
+  // any draft still get packet rounding applied when we merge them in below.
+  const stapleNamesLower = (staplesRes.data ?? [])
+    .map((s) => (s.name || '').toLowerCase().trim())
+    .filter(Boolean)
+  const uniqueNames = Array.from(new Set([...aggregated.map((a) => a.name), ...stapleNamesLower]))
 
   const { data: packetRows } = uniqueNames.length > 0
     ? await supabase
@@ -116,22 +121,22 @@ export async function buildShoppingFromDrafts(
     packsByName.get(row.ingredient_name)!.push(choice)
   }
 
-  const stapleNames = new Set((staplesRes.data ?? []).map((s) => (s.name || '').toLowerCase()))
+  const stapleNamesSet = new Set(stapleNamesLower)
 
   // Round each line.
   const rounded: ShoppingLine[] = aggregated.map((line) => {
     const packs = packsByName.get(line.name) ?? []
     const r = roundToPacket(line, packs)
-    return { ...r, is_staple: stapleNames.has(line.name.toLowerCase()) }
+    return { ...r, is_staple: stapleNamesSet.has(line.name.toLowerCase()) }
   })
 
-  // Merge staples not yet included.
+  // Merge staples not yet included (lowercase normalized to match packet_sizes rows).
   for (const s of staplesRes.data ?? []) {
-    const lcName = (s.name || '').toLowerCase()
+    const lcName = (s.name || '').toLowerCase().trim()
     if (!lcName) continue
     if (rounded.some((r) => r.name.toLowerCase() === lcName)) continue
-    const packs = packsByName.get(s.name) ?? []
-    const r = roundToPacket({ name: s.name, quantity: s.default_quantity, unit: s.default_unit }, packs)
+    const packs = packsByName.get(lcName) ?? []
+    const r = roundToPacket({ name: lcName, quantity: s.default_quantity, unit: s.default_unit }, packs)
     rounded.push({ ...r, is_staple: true })
   }
 

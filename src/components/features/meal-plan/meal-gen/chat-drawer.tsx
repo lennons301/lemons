@@ -63,12 +63,15 @@ export function ChatDrawer({
     onDraftsChange(chat.drafts)
   }, [chat.drafts, onDraftsChange])
 
-  // Refresh shopping preview whenever drafts change. `chat` is useMemo-stable
-  // so depending on the whole object is cheaper than listing every accessed field.
+  // Refresh shopping preview whenever drafts change. Depending on the whole
+  // `chat` object would loop: useMemo re-identifies on any state change
+  // (including previewLoading / shoppingPreview), and this effect mutates both.
+  // Use the specific fields; refreshShoppingPreview is useCallback-stable.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (chat.drafts.length === 0) return
     void chat.refreshShoppingPreview()
-  }, [chat])
+  }, [chat.drafts, chat.refreshShoppingPreview])
 
   // Surface errors via toast.
   useEffect(() => {
