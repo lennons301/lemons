@@ -15,6 +15,7 @@ import { useMealGenChat, type DraftRow } from './use-meal-gen-chat'
 import { MessageList } from './message-list'
 import { MessageInput } from './message-input'
 import { AcceptPlanModal } from './accept-plan-modal'
+import { ShoppingPreview } from './shopping-preview'
 
 interface Props {
   open: boolean
@@ -61,6 +62,12 @@ export function ChatDrawer({
   useEffect(() => {
     onDraftsChange(chat.drafts)
   }, [chat.drafts, onDraftsChange])
+
+  // Refresh shopping preview whenever drafts change.
+  useEffect(() => {
+    if (chat.drafts.length === 0) return
+    void chat.refreshShoppingPreview()
+  }, [chat.drafts, chat.refreshShoppingPreview])
 
   // Surface errors via toast.
   useEffect(() => {
@@ -133,6 +140,14 @@ export function ChatDrawer({
           disabled={chat.sending || chat.status !== 'active'}
           showSuggestions={chat.messages.length === 0}
         />
+
+        {chat.shoppingPreview && chat.drafts.length >= 3 ? (
+          <ShoppingPreview
+            items={chat.shoppingPreview.items}
+            totals={chat.shoppingPreview.totals}
+            loading={chat.previewLoading}
+          />
+        ) : null}
 
         <div className="flex items-center justify-between gap-2 border-t p-3">
           <Button variant="ghost" size="sm" onClick={handleDiscard} disabled={chat.status !== 'active'}>

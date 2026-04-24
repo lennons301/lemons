@@ -37,6 +37,21 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
   const [status, setStatus] = useState<ConversationStatus>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shoppingPreview, setShoppingPreview] = useState<{
+    items: Array<{
+      name: string
+      required_qty: number | null
+      required_unit: string | null
+      packed_qty: number | null
+      packed_unit: string | null
+      waste_qty: number
+      pack_size: { quantity: number; unit: string } | null
+      pack_count: number
+      is_staple: boolean
+    }>
+    totals: { line_count: number; waste_qty_total: number; pack_total: number }
+  } | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   async function readError(res: Response, fallback: string): Promise<string> {
     try {
@@ -118,6 +133,19 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
     setStatus('abandoned')
   }, [conversationId])
 
+  const refreshShoppingPreview = useCallback(async () => {
+    if (!conversationId) return
+    setPreviewLoading(true)
+    try {
+      const res = await fetch(`/api/meal-plans/generate/${conversationId}/shopping-preview`)
+      if (!res.ok) return
+      const body = await res.json()
+      setShoppingPreview(body)
+    } finally {
+      setPreviewLoading(false)
+    }
+  }, [conversationId])
+
   const resume = useCallback(async (id: string) => {
     setError(null)
     const res = await fetch(`/api/meal-plans/generate/${id}`)
@@ -138,6 +166,7 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
     setDrafts([])
     setStatus(null)
     setError(null)
+    setShoppingPreview(null)
   }, [])
 
   // Stable object identity — protects consumer effects that depend on `chat`
@@ -150,12 +179,15 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
       status,
       sending,
       error,
+      shoppingPreview,
+      previewLoading,
       start,
       send,
       accept,
       discard,
       resume,
       reset,
+      refreshShoppingPreview,
     }),
     [
       conversationId,
@@ -164,12 +196,15 @@ export function useMealGenChat({ household_id, week_start }: UseMealGenChatArgs)
       status,
       sending,
       error,
+      shoppingPreview,
+      previewLoading,
       start,
       send,
       accept,
       discard,
       resume,
       reset,
+      refreshShoppingPreview,
     ],
   )
 }
