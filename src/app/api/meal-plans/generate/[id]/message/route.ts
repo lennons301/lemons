@@ -32,6 +32,12 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
   if (loaded.conversation.status !== 'active') {
     return NextResponse.json({ error: `Conversation is ${loaded.conversation.status}` }, { status: 409 })
   }
+  if (!loaded.apiKey) {
+    return NextResponse.json(
+      { error: 'This household has no Anthropic API key configured. Add one in Settings before generating meal plans.' },
+      { status: 409 },
+    )
+  }
 
   const prior = (loaded.conversation.messages as unknown as MealGenMessage[] | null) ?? []
   if (isConversationAtMessageCap(prior)) {

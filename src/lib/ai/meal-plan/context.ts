@@ -37,8 +37,16 @@ export async function loadConversationContext(
 
   if (!conversation) return null
 
-  const [apiKeyRes, personsRes, staplesRes, recipesRes] = await Promise.all([
-    supabase.from('households').select('anthropic_api_key').eq('id', conversation.household_id).maybeSingle(),
+  // Load the household's Anthropic key separately (same pattern as /api/recipes/extract).
+  // Keeping this out of the Promise.all batch gives a clearer failure mode if it's the
+  // key specifically that can't be read, rather than a bulk batch error.
+  const { data: householdKey } = await supabase
+    .from('households')
+    .select('anthropic_api_key')
+    .eq('id', conversation.household_id)
+    .single()
+
+  const [personsRes, staplesRes, recipesRes] = await Promise.all([
     supabase.from('household_persons').select('id, display_name, date_of_birth, person_type').eq('household_id', conversation.household_id),
     supabase.from('household_staples').select('name').eq('household_id', conversation.household_id),
     supabase.from('recipes').select('id, title, recipe_tags(tag_name)').eq('household_id', conversation.household_id),
@@ -52,6 +60,8 @@ export async function loadConversationContext(
     tags: ((r.recipe_tags ?? []) as Array<{ tag_name: string }>).map((t) => t.tag_name),
   }))
 
+  const rawKey = householdKey?.anthropic_api_key?.trim()
+
   return {
     conversation: conversation as unknown as MealGenConversationRow,
     household: {
@@ -60,6 +70,6 @@ export async function loadConversationContext(
       locale: 'UK',
     },
     catalogRecipes,
-    apiKey: (apiKeyRes.data as { anthropic_api_key?: string } | null)?.anthropic_api_key ?? undefined,
+    apiKey: rawKey && rawKey.length > 0 ? rawKey : undefined,
   }
 }
