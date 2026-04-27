@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -27,6 +27,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ArrowLeft, MoreVertical, Plus, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { TodoItemRow } from './todo-item-row'
@@ -35,6 +42,7 @@ import { TodoListDialog } from './todo-list-dialog'
 import { GroupSections } from './group-sections'
 import { GroupTabs } from './group-tabs'
 import { GroupViewToggle } from './group-view-toggle'
+import { getGroupNames } from './group-utils'
 import type { TodoList, TodoItem, TodoPriority, TodoListType } from '@/types/todos'
 import type { Person } from '@/types/person'
 
@@ -63,6 +71,26 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
   const pendingItems = items.filter((i) => i.status !== 'completed')
   const completedItems = items.filter((i) => i.status === 'completed')
   const hasGroups = items.some((i) => i.group_name !== null && i.group_name !== undefined)
+  const groupNames = useMemo(() => getGroupNames(pendingItems), [pendingItems])
+  const namedGroups = groupNames.filter((g): g is string => g !== null)
+
+  const [activeTab, setActiveTab] = useState<string | null>(null)
+  const [quickAddGroup, setQuickAddGroup] = useState<string | null>(null)
+
+  // Keep the active tab valid when items change
+  useEffect(() => {
+    if (groupNames.length === 0) return
+    if (!groupNames.includes(activeTab)) {
+      setActiveTab(groupNames[0])
+    }
+  }, [groupNames, activeTab])
+
+  // In tabs view the active tab implies the target group for quick-add
+  useEffect(() => {
+    if (groupViewMode === 'tabs' && hasGroups) {
+      setQuickAddGroup(activeTab)
+    }
+  }, [groupViewMode, activeTab, hasGroups])
 
   const defaultAssignee = list.default_assigned_to
     ? persons.find((p) => p.id === list.default_assigned_to)
@@ -122,7 +150,10 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
       const res = await fetch(`/api/todos/${list.id}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTaskTitle.trim() }),
+        body: JSON.stringify({
+          title: newTaskTitle.trim(),
+          group_name: hasGroups ? quickAddGroup : null,
+        }),
       })
       if (res.ok) {
         const created = await res.json()
@@ -310,6 +341,22 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
           onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
         />
+        {hasGroups && groupViewMode === 'sections' && namedGroups.length > 0 && (
+          <Select
+            value={quickAddGroup ?? '__none'}
+            onValueChange={(v) => setQuickAddGroup(v === '__none' ? null : v)}
+          >
+            <SelectTrigger className="w-[140px] shrink-0">
+              <SelectValue placeholder="Group" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none">No group</SelectItem>
+              {namedGroups.map((g) => (
+                <SelectItem key={g} value={g}>{g}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Button onClick={handleQuickAdd} disabled={adding || !newTaskTitle.trim()}>
           {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         </Button>
@@ -338,6 +385,8 @@ export function TodoDetail({ list: initialList, persons }: TodoDetailProps) {
           <GroupTabs
             items={pendingItems}
             persons={persons}
+            activeTab={activeTab}
+            onActiveTabChange={setActiveTab}
             onToggle={handleToggle}
             onClick={(i) => { setEditingItem(i); setEditDialogOpen(true) }}
             onDragEnd={handleDragEnd}
