@@ -58,22 +58,22 @@ export function MealCard({ entry, persons, onEdit, onDelete }: MealCardProps) {
           <Link
             href={`/recipes/${entry.recipe_id}`}
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex h-5 w-5 items-center justify-center rounded-sm hover:bg-accent hover:text-accent-foreground"
+            className="inline-flex h-7 w-7 sm:h-5 sm:w-5 items-center justify-center rounded-sm hover:bg-accent hover:text-accent-foreground"
             title="View recipe"
           >
-            <BookOpen className="h-3 w-3" />
+            <BookOpen className="h-4 w-4 sm:h-3 sm:w-3" />
           </Link>
         )}
         <Button
           variant="ghost"
           size="icon"
-          className="h-5 w-5"
+          className="h-7 w-7 sm:h-5 sm:w-5"
           onClick={(e) => {
             e.stopPropagation()
             onDelete()
           }}
         >
-          <X className="h-3 w-3" />
+          <X className="h-4 w-4 sm:h-3 sm:w-3" />
         </Button>
       </div>
     </div>

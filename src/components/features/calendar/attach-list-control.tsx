@@ -47,11 +47,11 @@ export function AttachListControl({ householdId, eventId, currentListId, onChang
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-9 w-9 sm:h-6 sm:w-6"
             onClick={() => onChange('none', null)}
             title="Detach list"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </Button>
         </div>
       </div>

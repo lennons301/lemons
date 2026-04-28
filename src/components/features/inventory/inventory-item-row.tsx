@@ -51,23 +51,23 @@ export function InventoryItemRow({ item, onQuantityChange, onClick }: InventoryI
             {item.quantity}{item.unit ? ` ${item.unit}` : ''}
           </span>
         )}
-        <div className="flex gap-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-1 sm:gap-0.5" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="outline"
             size="icon"
-            className="h-6 w-6"
+            className="h-9 w-9 sm:h-6 sm:w-6"
             onClick={() => handleQuantityChange(-1)}
             disabled={item.quantity == null || item.quantity <= 0}
           >
-            <Minus className="h-3 w-3" />
+            <Minus className="h-4 w-4 sm:h-3 sm:w-3" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="h-6 w-6"
+            className="h-9 w-9 sm:h-6 sm:w-6"
             onClick={() => handleQuantityChange(1)}
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
           </Button>
         </div>
       </div>

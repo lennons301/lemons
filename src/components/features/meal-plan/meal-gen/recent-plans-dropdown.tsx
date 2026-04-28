@@ -45,10 +45,10 @@ export function RecentPlansDropdown({ householdId, onResume }: Props) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <History className="h-4 w-4 mr-1" />
-          Recent
-          <ChevronDown className="h-3 w-3 ml-1" />
+        <Button variant="outline" size="sm" aria-label="Recent plans">
+          <History className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Recent</span>
+          <ChevronDown className="h-3 w-3 ml-1 hidden sm:inline-block" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72">
