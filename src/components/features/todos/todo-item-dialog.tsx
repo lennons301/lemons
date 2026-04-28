@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -100,11 +101,11 @@ export function TodoItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent variant="sheet" className="sm:max-w-md">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-2">
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <DialogBody className="space-y-4 px-4 pb-2 sm:px-6">
           <div className="space-y-2">
             <Label htmlFor="task-title">Title</Label>
             <Input
@@ -124,7 +125,7 @@ export function TodoItemDialog({
               rows={3}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Priority</Label>
               <Select value={priority} onValueChange={(v) => setPriority(v as TodoPriority)}>
@@ -173,13 +174,15 @@ export function TodoItemDialog({
               placeholder="e.g. Clothes, Toiletries"
             />
           </div>
-        </div>
-        <DialogFooter className="flex justify-between">
-          {item && onDelete && (
-            <Button variant="outline" onClick={handleDelete} disabled={deleting} className="text-destructive mr-auto">
+        </DialogBody>
+        <DialogFooter className="flex flex-row justify-between gap-2 px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
+          {item && onDelete ? (
+            <Button variant="outline" onClick={handleDelete} disabled={deleting} className="text-destructive">
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1" />}
               Delete
             </Button>
+          ) : (
+            <span />
           )}
           <Button onClick={handleSave} disabled={saving || !title.trim()}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
