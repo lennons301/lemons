@@ -63,7 +63,8 @@ export function TodoItemRow({ item, persons, onToggle, onClick }: TodoItemRowPro
       className={`flex items-center gap-1.5 py-2.5 px-1 pr-3 border-b last:border-b-0 hover:bg-muted/50 ${isDragging ? 'opacity-50 bg-muted z-10 relative shadow-md' : ''} ${isCompleted ? 'opacity-40' : ''}`}
     >
       <button
-        className="touch-none shrink-0 p-1 text-muted-foreground/50 hover:text-muted-foreground cursor-grab active:cursor-grabbing"
+        className="touch-none shrink-0 p-2 sm:p-1 text-muted-foreground/50 hover:text-muted-foreground cursor-grab active:cursor-grabbing"
+        aria-label="Drag to reorder"
         {...attributes}
         {...listeners}
       >
