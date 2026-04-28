@@ -12,15 +12,15 @@ interface DashboardWidgetProps {
 
 export function DashboardWidget({ title, linkHref, linkText, empty, children }: DashboardWidgetProps) {
   return (
-    <div className="border rounded-lg p-3">
-      <div className="flex justify-between items-center mb-2.5">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        <Link href={linkHref} className="text-[11px] text-primary hover:underline">
+    <div className="border rounded-lg p-4 sm:p-3">
+      <div className="flex justify-between items-center mb-3 sm:mb-2.5">
+        <h2 className="text-base sm:text-sm font-semibold">{title}</h2>
+        <Link href={linkHref} className="text-xs sm:text-[11px] text-primary hover:underline">
           {linkText}
         </Link>
       </div>
       {children || (
-        <p className="text-xs text-muted-foreground py-4 text-center">{empty || 'Nothing here'}</p>
+        <p className="text-sm sm:text-xs text-muted-foreground py-4 text-center">{empty || 'Nothing here'}</p>
       )}
     </div>
   )

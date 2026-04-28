@@ -25,10 +25,10 @@ export function WeekStrip({ events, selectedDate, onSelectDate }: WeekStripProps
 
   return (
     <div className="border-b pb-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+      <p className="text-xs sm:text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
         This Week
       </p>
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-1">
         {days.map((day, i) => {
           const isToday = isSameDay(day, today)
           const isSelected = isSameDay(day, selectedDate)
@@ -41,7 +41,7 @@ export function WeekStrip({ events, selectedDate, onSelectDate }: WeekStripProps
             <button
               key={i}
               onClick={() => onSelectDate(day)}
-              className={`text-center py-1.5 rounded-lg w-full transition-colors ${
+              className={`text-center py-2 sm:py-1.5 rounded-lg w-full transition-colors ${
                 isSelected
                   ? 'bg-primary text-primary-foreground'
                   : isToday
@@ -49,15 +49,15 @@ export function WeekStrip({ events, selectedDate, onSelectDate }: WeekStripProps
                   : 'hover:bg-muted'
               } ${isPast && !isSelected ? 'opacity-40' : ''}`}
             >
-              <div className="text-[10px]">{DAY_NAMES[i]}</div>
-              <div className={`text-base font-semibold ${isSelected ? 'font-bold' : ''}`}>
+              <div className="text-xs sm:text-[10px]">{DAY_NAMES[i]}</div>
+              <div className={`text-lg sm:text-base font-semibold ${isSelected ? 'font-bold' : ''}`}>
                 {day.getDate()}
               </div>
               <div className="flex gap-0.5 justify-center mt-1 h-[6px]">
                 {categories.map((cat) => (
                   <div
                     key={cat}
-                    className="w-[5px] h-[5px] rounded-full"
+                    className="w-1.5 h-1.5 sm:w-[5px] sm:h-[5px] rounded-full"
                     style={{ background: isSelected ? 'currentColor' : CATEGORY_COLORS[cat] }}
                   />
                 ))}

@@ -170,18 +170,18 @@ export function DashboardView({
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-xl font-bold">{getGreeting()}, {displayName}</h1>
-          <p className="text-xs text-muted-foreground">{todayStr}</p>
+          <h1 className="text-2xl sm:text-xl font-bold">{getGreeting()}, {displayName}</h1>
+          <p className="text-sm sm:text-xs text-muted-foreground">{todayStr}</p>
         </div>
-        <div className="flex border rounded-md text-xs overflow-hidden">
+        <div className="flex border rounded-md text-sm sm:text-xs overflow-hidden">
           <button
-            className={`px-3 py-1.5 ${filter === 'household' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
+            className={`px-3.5 py-2 sm:px-3 sm:py-1.5 ${filter === 'household' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
             onClick={() => setFilter('household')}
           >
             Household
           </button>
           <button
-            className={`px-3 py-1.5 ${filter === 'me' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
+            className={`px-3.5 py-2 sm:px-3 sm:py-1.5 ${filter === 'me' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
             onClick={() => setFilter('me')}
           >
             Just Me
@@ -197,16 +197,16 @@ export function DashboardView({
         {/* Selected day's Events */}
         <DashboardWidget title={`${getDateLabel(selectedDate)} Events`} linkHref="/calendar" linkText="View calendar" empty={`No events ${getDateLabel(selectedDate).toLowerCase().replace("'s", '')}`}>
           {todayEvents.length > 0 && (
-            <div className="space-y-0.5">
+            <div className="space-y-1 sm:space-y-0.5">
               {todayEvents.map((evt) => (
-                <div key={evt.id} className="flex items-center gap-2 py-1.5">
+                <div key={evt.id} className="flex items-center gap-2 py-2 sm:py-1.5">
                   <div
-                    className="w-[3px] h-6 rounded-sm shrink-0"
+                    className="w-1 h-7 sm:w-[3px] sm:h-6 rounded-sm shrink-0"
                     style={{ background: CATEGORY_COLORS[evt.category] }}
                   />
                   <div className="min-w-0">
-                    <div className="text-xs font-medium truncate">{evt.title}</div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-sm sm:text-xs font-medium truncate">{evt.title}</div>
+                    <div className="text-xs sm:text-[10px] text-muted-foreground">
                       {evt.all_day ? 'All day' : `${formatTime(new Date(evt.start_datetime))} – ${formatTime(new Date(evt.end_datetime))}`}
                     </div>
                   </div>
@@ -219,19 +219,19 @@ export function DashboardView({
         {/* Tasks Due */}
         <DashboardWidget title={`${getDateLabel(selectedDate)} Tasks`} linkHref="/todos" linkText="View todos" empty="No tasks due">
           {visibleTasks.length > 0 && (
-            <div className="space-y-0.5">
+            <div className="space-y-1 sm:space-y-0.5">
               {visibleTasks.map((task) => {
                 const badge = task.due_date ? getDueBadge(task.due_date) : null
                 const prioColor = PRIORITY_COLORS[task.priority]
                 return (
-                  <div key={task.id} className="flex items-center gap-1.5 py-1">
+                  <div key={task.id} className="flex items-center gap-2 sm:gap-1.5 py-2 sm:py-1">
                     <div
-                      className="w-3 h-3 rounded-sm border-2 shrink-0"
+                      className="w-3.5 h-3.5 sm:w-3 sm:h-3 rounded-sm border-2 shrink-0"
                       style={{ borderColor: prioColor || 'var(--border)' }}
                     />
-                    <span className="text-xs flex-1 truncate">{task.title}</span>
+                    <span className="text-sm sm:text-xs flex-1 truncate">{task.title}</span>
                     {badge && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-md shrink-0 ${badge.className}`}>
+                      <span className={`text-[10px] sm:text-[9px] px-1.5 py-0.5 rounded-md shrink-0 ${badge.className}`}>
                         {badge.label}
                       </span>
                     )}
@@ -239,7 +239,7 @@ export function DashboardView({
                 )
               })}
               {taskOverflow > 0 && (
-                <Link href="/todos" className="text-[10px] text-muted-foreground hover:text-foreground block pt-1">
+                <Link href="/todos" className="text-xs sm:text-[10px] text-muted-foreground hover:text-foreground block pt-1">
                   +{taskOverflow} more
                 </Link>
               )}
@@ -255,20 +255,20 @@ export function DashboardView({
           empty={undefined}
         >
           {filteredMeals.length > 0 ? (
-            <div className="space-y-0.5">
+            <div className="space-y-1 sm:space-y-0.5">
               {filteredMeals.map((meal) => (
-                <div key={meal.id} className="py-1.5">
-                  <div className="text-[10px] uppercase text-muted-foreground font-semibold">
+                <div key={meal.id} className="py-2 sm:py-1.5">
+                  <div className="text-xs sm:text-[10px] uppercase text-muted-foreground font-semibold">
                     {meal.meal_type}
                   </div>
-                  <div className="text-xs font-medium mt-0.5">
+                  <div className="text-sm sm:text-xs font-medium mt-0.5">
                     {meal.recipes?.title || meal.custom_name || 'Untitled'}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground py-4 text-center">
+            <p className="text-sm sm:text-xs text-muted-foreground py-4 text-center">
               No meals planned — <Link href="/meal-plans" className="text-primary hover:underline">Plan meals</Link>
             </p>
           )}
@@ -277,14 +277,14 @@ export function DashboardView({
         {/* Expiring Inventory */}
         <DashboardWidget title="Expiring Soon" linkHref="/inventory" linkText="View inventory" empty="Nothing expiring soon">
           {visibleInventory.length > 0 && (
-            <div className="space-y-0.5">
+            <div className="space-y-1 sm:space-y-0.5">
               {visibleInventory.map((item) => {
                 const badge = item.expiry_date ? getExpiryBadge(item.expiry_date) : null
                 return (
-                  <div key={item.id} className="flex items-center justify-between py-1">
-                    <span className="text-xs truncate">{item.display_name}</span>
+                  <div key={item.id} className="flex items-center justify-between gap-2 py-2 sm:py-1">
+                    <span className="text-sm sm:text-xs truncate">{item.display_name}</span>
                     {badge && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-md shrink-0 ${badge.className}`}>
+                      <span className={`text-[10px] sm:text-[9px] px-1.5 py-0.5 rounded-md shrink-0 ${badge.className}`}>
                         {badge.label}
                       </span>
                     )}
@@ -292,7 +292,7 @@ export function DashboardView({
                 )
               })}
               {inventoryOverflow > 0 && (
-                <Link href="/inventory" className="text-[10px] text-muted-foreground hover:text-foreground block pt-1">
+                <Link href="/inventory" className="text-xs sm:text-[10px] text-muted-foreground hover:text-foreground block pt-1">
                   +{inventoryOverflow} more
                 </Link>
               )}
