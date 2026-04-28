@@ -101,87 +101,90 @@ export function WeekGrid({ weekStart, events, onSlotClick, onEventClick }: WeekG
   const today = new Date()
 
   return (
-    <div>
-      {/* All-day bar */}
-      {allDayEvents.length > 0 && (
+    <div
+      ref={scrollRef}
+      className="overflow-y-auto rounded-md border"
+      style={{ maxHeight: 'calc(100dvh - 220px)' }}
+    >
+      {/* Sticky headers: all-day bar + day-of-week strip */}
+      <div className="sticky top-0 z-20 bg-background">
+        {allDayEvents.length > 0 && (
+          <div className="grid border-b" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
+            <div className="py-1 px-1 text-[10px] text-muted-foreground text-right">all-day</div>
+            {days.map((day) => {
+              const dayAllDay = allDayEvents.filter((e) => eventOverlapsDay(e, day))
+              return (
+                <div key={day.toISOString()} className="border-l py-1 px-0.5 space-y-0.5">
+                  {dayAllDay.map((evt) => (
+                    <EventPill key={evt.id} event={evt} onClick={onEventClick} />
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         <div className="grid border-b" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
-          <div className="py-1 px-1 text-[10px] text-muted-foreground text-right">all-day</div>
-          {days.map((day) => {
-            const dayAllDay = allDayEvents.filter((e) => eventOverlapsDay(e, day))
+          <div />
+          {days.map((day, i) => {
+            const isToday = isSameDay(day, today)
             return (
-              <div key={day.toISOString()} className="border-l py-1 px-0.5 space-y-0.5">
-                {dayAllDay.map((evt) => (
-                  <EventPill key={evt.id} event={evt} onClick={onEventClick} />
-                ))}
+              <div key={day.toISOString()} className="border-l py-1.5 text-center">
+                <div className="text-[10px] text-muted-foreground">{DAY_NAMES[i]}</div>
+                <div className={`text-base font-semibold inline-flex items-center justify-center ${
+                  isToday ? 'bg-primary text-primary-foreground w-7 h-7 rounded-full' : ''
+                }`}>
+                  {day.getDate()}
+                </div>
               </div>
             )
           })}
         </div>
-      )}
-
-      {/* Day headers */}
-      <div className="grid border-b" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
-        <div />
-        {days.map((day, i) => {
-          const isToday = isSameDay(day, today)
-          return (
-            <div key={day.toISOString()} className="border-l py-1.5 text-center">
-              <div className="text-[10px] text-muted-foreground">{DAY_NAMES[i]}</div>
-              <div className={`text-base font-semibold inline-flex items-center justify-center ${
-                isToday ? 'bg-primary text-primary-foreground w-7 h-7 rounded-full' : ''
-              }`}>
-                {day.getDate()}
-              </div>
-            </div>
-          )
-        })}
       </div>
 
       {/* Time grid */}
-      <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-        <div className="grid" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
-          {/* Hour labels column */}
-          <div>
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className="text-[10px] text-muted-foreground text-right pr-1 border-b"
-                style={{ height: HOUR_HEIGHT }}
-              >
-                {hour === 0 ? '' : `${hour % 12 || 12} ${hour < 12 ? 'AM' : 'PM'}`}
-              </div>
-            ))}
-          </div>
-
-          {/* Day columns — each is a relative container for absolute event blocks */}
-          {days.map((day, dayIdx) => {
-            const positioned = timedByDay[dayIdx]
-            return (
-              <div key={day.toISOString()} className="border-l relative">
-                {/* Hour grid lines + click targets */}
-                {HOURS.map((hour) => (
-                  <div
-                    key={hour}
-                    className="border-b cursor-pointer hover:bg-muted/20"
-                    style={{ height: HOUR_HEIGHT }}
-                    onClick={() => onSlotClick(day, hour)}
-                  />
-                ))}
-                {/* Event blocks overlaid on the column */}
-                {positioned.map(({ event, widthFraction, offsetIndex }) => (
-                  <EventBlock
-                    key={event.id}
-                    event={event}
-                    onClick={onEventClick}
-                    hourHeight={HOUR_HEIGHT}
-                    widthFraction={widthFraction}
-                    offsetIndex={offsetIndex}
-                  />
-                ))}
-              </div>
-            )
-          })}
+      <div className="grid" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
+        {/* Hour labels column */}
+        <div>
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              className="text-[10px] text-muted-foreground text-right pr-1 border-b"
+              style={{ height: HOUR_HEIGHT }}
+            >
+              {hour === 0 ? '' : `${hour % 12 || 12} ${hour < 12 ? 'AM' : 'PM'}`}
+            </div>
+          ))}
         </div>
+
+        {/* Day columns — each is a relative container for absolute event blocks */}
+        {days.map((day, dayIdx) => {
+          const positioned = timedByDay[dayIdx]
+          return (
+            <div key={day.toISOString()} className="border-l relative">
+              {/* Hour grid lines + click targets */}
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  className="border-b cursor-pointer hover:bg-muted/20"
+                  style={{ height: HOUR_HEIGHT }}
+                  onClick={() => onSlotClick(day, hour)}
+                />
+              ))}
+              {/* Event blocks overlaid on the column */}
+              {positioned.map(({ event, widthFraction, offsetIndex }) => (
+                <EventBlock
+                  key={event.id}
+                  event={event}
+                  onClick={onEventClick}
+                  hourHeight={HOUR_HEIGHT}
+                  widthFraction={widthFraction}
+                  offsetIndex={offsetIndex}
+                />
+              ))}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
