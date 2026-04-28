@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -118,46 +118,46 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent variant="sheet" className="sm:max-w-lg">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-2">
           <DialogTitle>
             {step === 'dates' ? 'Generate Shopping List' : `Review (${entryCount} meals)`}
           </DialogTitle>
         </DialogHeader>
 
-        {step === 'dates' && (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="from">From</Label>
-              <Input
-                id="from"
-                type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="to">To</Label>
-              <Input
-                id="to"
-                type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </div>
-            <DialogFooter>
+        {step === 'dates' ? (
+          <>
+            <DialogBody className="space-y-4 px-4 pb-2 sm:px-6">
+              <div className="space-y-2">
+                <Label htmlFor="from">From</Label>
+                <Input
+                  id="from"
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="to">To</Label>
+                <Input
+                  id="to"
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
+            </DialogBody>
+            <DialogFooter className="px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
               <Button variant="outline" onClick={() => handleClose(false)}>Cancel</Button>
               <Button onClick={handleGenerate} disabled={loading || !from || !to}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Generate
               </Button>
             </DialogFooter>
-          </div>
-        )}
-
-        {step === 'review' && (
+          </>
+        ) : (
           <>
-            <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+            <DialogBody className="space-y-1 px-4 pb-2 sm:px-6">
               {draft.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
                   No ingredients found for this date range.
@@ -166,7 +166,7 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
                 draft.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 py-1.5 px-1 rounded hover:bg-muted/50"
+                    className="flex items-center gap-2 py-1.5 rounded hover:bg-muted/50"
                   >
                     <Checkbox
                       checked={item.included}
@@ -180,7 +180,7 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
                     </span>
                     <Input
                       type="number"
-                      className="w-20 h-7 text-sm"
+                      className="w-20 h-9 sm:h-7 text-sm"
                       value={item.quantity ?? ''}
                       onChange={(e) => updateQuantity(idx, e.target.value)}
                       placeholder="qty"
@@ -192,10 +192,9 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
                 ))
               )}
 
-              {/* Manual add */}
               <div className="flex items-center gap-2 pt-2 border-t mt-2">
                 <Input
-                  className="flex-1 h-8 text-sm"
+                  className="flex-1 h-9 sm:h-8 text-sm"
                   placeholder="Add item..."
                   value={manualItem}
                   onChange={(e) => setManualItem(e.target.value)}
@@ -205,13 +204,13 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
                   Add
                 </Button>
               </div>
-            </div>
+            </DialogBody>
 
-            <DialogFooter>
+            <DialogFooter className="px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
               <Button variant="outline" onClick={() => setStep('dates')}>Back</Button>
               <Button onClick={handleConfirm} disabled={saving || draft.filter((d) => d.included).length === 0}>
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create List ({draft.filter((d) => d.included).length} items)
+                Create List ({draft.filter((d) => d.included).length})
               </Button>
             </DialogFooter>
           </>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -102,11 +103,11 @@ export function TodoListDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent variant="sheet" className="sm:max-w-md">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-2">
           <DialogTitle>{list ? 'Edit List' : 'New List'}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <DialogBody className="space-y-4 px-4 pb-2 sm:px-6">
           <div className="space-y-2">
             <Label htmlFor="list-title">Title</Label>
             <Input
@@ -200,8 +201,8 @@ export function TodoListDialog({
               </SelectContent>
             </Select>
           </div>
-        </div>
-        <DialogFooter>
+        </DialogBody>
+        <DialogFooter className="px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
           <Button onClick={handleSave} disabled={saving || !title.trim()}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
             {list ? 'Save' : 'Create'}

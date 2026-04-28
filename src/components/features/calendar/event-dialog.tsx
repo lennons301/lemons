@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -190,11 +191,11 @@ export function EventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent variant="sheet" className="sm:max-w-md">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-2">
           <DialogTitle>{event ? 'Edit Event' : 'New Event'}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto space-y-4 py-2">
+        <DialogBody className="space-y-4 px-4 pb-2 sm:px-6">
           <div className="space-y-2">
             <Label htmlFor="event-title">Title</Label>
             <Input
@@ -330,13 +331,15 @@ export function EventDialog({
             currentListId={(event as any)?.list_progress?.list_id ?? null}
             onChange={(mode, id) => { setAttachMode(mode); setAttachListId(id) }}
           />
-        </div>
-        <DialogFooter className="flex justify-between">
-          {event && onDelete && (
-            <Button variant="outline" onClick={handleDelete} disabled={deleting} className="text-destructive mr-auto">
+        </DialogBody>
+        <DialogFooter className="flex flex-row justify-between gap-2 px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
+          {event && onDelete ? (
+            <Button variant="outline" onClick={handleDelete} disabled={deleting} className="text-destructive">
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1" />}
               Delete
             </Button>
+          ) : (
+            <span />
           )}
           <Button onClick={handleSave} disabled={saving || !title.trim()}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}

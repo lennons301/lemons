@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -135,24 +136,24 @@ export function AddToInventoryReview({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent variant="sheet" className="sm:max-w-lg">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-2">
           <DialogTitle>Add to Inventory</DialogTitle>
           <p className="text-sm text-muted-foreground">
             Assign locations for each item. Previously used locations are pre-filled.
           </p>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-1 py-2">
+        <DialogBody className="px-4 sm:px-6">
           {loading ? (
             <div className="py-8 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
             </div>
           ) : (
             reviewItems.map((item, index) => (
-              <div key={item.id} className="py-3 px-2 border-b last:border-b-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
+              <div key={item.id} className="py-3 border-b last:border-b-0">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm flex items-center gap-2">
                       {item.title}
                       {item.isNew && (
@@ -170,12 +171,12 @@ export function AddToInventoryReview({
                       <div className="text-[11px] text-muted-foreground mt-0.5">remembered from last time</div>
                     )}
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 w-full sm:w-auto">
                     <Select
                       value={item.location}
                       onValueChange={(v) => updateItem(index, 'location', v)}
                     >
-                      <SelectTrigger className={`h-8 w-[130px] text-xs ${!item.location ? 'border-dashed border-primary' : ''}`}>
+                      <SelectTrigger className={`h-9 sm:h-8 flex-1 sm:w-[130px] text-xs ${!item.location ? 'border-dashed border-primary' : ''}`}>
                         <SelectValue placeholder="Location..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -190,7 +191,7 @@ export function AddToInventoryReview({
                       value={item.category || ''}
                       onValueChange={(v) => updateItem(index, 'category', v)}
                     >
-                      <SelectTrigger className="h-8 w-[110px] text-xs">
+                      <SelectTrigger className="h-9 sm:h-8 flex-1 sm:w-[110px] text-xs">
                         <SelectValue placeholder="Category..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -207,9 +208,9 @@ export function AddToInventoryReview({
               </div>
             ))
           )}
-        </div>
+        </DialogBody>
 
-        <DialogFooter>
+        <DialogFooter className="px-4 pb-4 pt-3 sm:px-6 sm:pb-6 border-t">
           <Button onClick={handleSubmit} disabled={submitting || !allHaveLocation || loading}>
             {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
             Add {reviewItems.length} item{reviewItems.length !== 1 ? 's' : ''} to Inventory
