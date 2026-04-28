@@ -102,14 +102,16 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
   const renderItem = (item: ShoppingItem) => (
     <div
       key={item.id}
-      className="flex items-center gap-2 py-2 px-2 rounded hover:bg-muted/50 group"
+      className="flex items-center gap-3 sm:gap-2 py-2.5 sm:py-2 px-2 rounded hover:bg-muted/50 group cursor-pointer"
+      onClick={() => toggleItem(item)}
     >
       <Checkbox
         checked={item.status === 'completed'}
         onCheckedChange={() => toggleItem(item)}
+        onClick={(e) => e.stopPropagation()}
       />
       <span
-        className={`flex-1 text-sm ${
+        className={`flex-1 text-sm min-w-0 ${
           item.status === 'completed' ? 'line-through text-muted-foreground' : ''
         }`}
       >
@@ -123,8 +125,11 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
       <Button
         variant="ghost"
         size="icon"
-        className="h-9 w-9 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100"
-        onClick={() => deleteItem(item.id)}
+        className="h-9 w-9 sm:h-6 sm:w-6 shrink-0 sm:opacity-0 sm:group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation()
+          deleteItem(item.id)
+        }}
       >
         <Trash2 className="h-4 w-4 sm:h-3 sm:w-3" />
       </Button>
@@ -134,20 +139,22 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex items-center gap-2">
-        <Link href="/shopping">
+        <Link href="/shopping" className="shrink-0">
           <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Back
+            <ArrowLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
         </Link>
-        <h1 className="flex-1 text-2xl font-bold">{initialList.title}</h1>
+        <h1 className="flex-1 min-w-0 text-xl sm:text-2xl font-bold truncate">{initialList.title}</h1>
         <Button
           variant="outline"
           size="sm"
           onClick={deleteList}
           disabled={deleting}
-          className="text-destructive"
+          className="text-destructive shrink-0"
         >
-          <Trash2 className="mr-1 h-4 w-4" /> Delete
+          <Trash2 className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Delete</span>
         </Button>
       </div>
 
@@ -165,7 +172,7 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
       </div>
 
       {/* Pending items */}
-      <div className="space-y-0.5">
+      <div className="space-y-1 sm:space-y-0.5">
         {pendingItems.length === 0 && completedItems.length === 0 && (
           <p className="text-muted-foreground text-sm py-8 text-center">No items yet</p>
         )}
@@ -178,7 +185,7 @@ export function ShoppingListDetail({ list: initialList, householdId }: ShoppingL
           <p className="text-xs font-medium text-muted-foreground uppercase mb-1">
             Completed ({completedItems.length})
           </p>
-          <div className="space-y-0.5">
+          <div className="space-y-1 sm:space-y-0.5">
             {completedItems.map(renderItem)}
           </div>
         </div>
