@@ -6,7 +6,7 @@ import { WeekStrip } from './week-strip'
 import { DashboardWidget } from './dashboard-widget'
 import { CATEGORY_COLORS } from '@/types/calendar'
 import { PRIORITY_COLORS } from '@/types/todos'
-import { formatTime } from '@/lib/utils/calendar'
+import { formatTime, toLocalDateIso } from '@/lib/utils/calendar'
 import type { CalendarEvent } from '@/types/calendar'
 import type { TodoItem } from '@/types/todos'
 import type { InventoryItem } from '@/types/inventory'
@@ -102,7 +102,7 @@ export function DashboardView({
 
   const isMe = filter === 'me'
 
-  const selectedDateIso = selectedDate.toISOString().split('T')[0]
+  const selectedDateIso = toLocalDateIso(selectedDate)
 
   // Filter events
   const filteredEvents = useMemo(() => {

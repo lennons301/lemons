@@ -1,20 +1,21 @@
 import { DashboardView } from '@/components/features/dashboard/dashboard-view'
-import { getWeekStart, getWeekRange } from '@/lib/utils/calendar'
+import { getWeekStart, getWeekRange, addDaysToIsoDate } from '@/lib/utils/calendar'
 import { getPageContext } from '@/lib/supabase/queries'
+import { getUserTimezone, todayInTimezone } from '@/lib/utils/timezone'
 
 export default async function HomePage() {
   const { supabase, user, householdId, profile } = await getPageContext()
 
   const displayName = profile.display_name || user.email?.split('@')[0] || 'there'
 
-  // Date computations
-  const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const weekStart = getWeekStart(now)
+  // Anchor "today" to the user's timezone so dashboard data matches their calendar.
+  const tz = await getUserTimezone()
+  const today = todayInTimezone(tz)
+  // Noon-UTC anchor lets getWeekStart's day-of-week math line up with the user's date.
+  const todayAnchor = new Date(`${today}T12:00:00Z`)
+  const weekStart = getWeekStart(todayAnchor)
   const { start: weekStartIso, end: weekEndIso } = getWeekRange(weekStart)
-  const threeDaysFromNow = new Date(now)
-  threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
-  const threeDaysStr = threeDaysFromNow.toISOString().split('T')[0]
+  const threeDaysStr = addDaysToIsoDate(today, 3)
 
   // Fetch all data in parallel
   const [eventsResult, listsResult, mealsResult, inventoryResult, memberResult] = await Promise.all([
@@ -67,9 +68,7 @@ export default async function HomePage() {
   const expiringItems = inventoryResult.data || []
 
   // Flatten tasks from lists
-  const thirtyDaysAgo = new Date(now)
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const thirtyDaysStr = thirtyDaysAgo.toISOString().split('T')[0]
+  const thirtyDaysStr = addDaysToIsoDate(today, -30)
   const weekEndDate = weekEndIso.split('T')[0]
 
   const tasks = (listsResult.data || [])

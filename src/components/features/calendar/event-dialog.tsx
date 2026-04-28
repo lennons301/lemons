@@ -24,6 +24,7 @@ import { Loader2, Trash2 } from 'lucide-react'
 import { EVENT_CATEGORIES, CATEGORY_COLORS } from '@/types/calendar'
 import type { CalendarEvent, EventCategory } from '@/types/calendar'
 import type { Person } from '@/types/person'
+import { toLocalDateIso } from '@/lib/utils/calendar'
 import { AttachListControl } from './attach-list-control'
 
 interface EventDialogProps {
@@ -114,7 +115,7 @@ export function EventDialog({
       setTitle('')
       setCategory('custom')
       setAllDay(defaultAllDay ?? true)
-      setStartDate(defaultDate || new Date().toISOString().split('T')[0])
+      setStartDate(defaultDate || toLocalDateIso(new Date()))
       setStartTime(defaultTime || '09:00')
       setEndDate('')
       setEndTime(defaultTime ? incrementHour(defaultTime) : '10:00')

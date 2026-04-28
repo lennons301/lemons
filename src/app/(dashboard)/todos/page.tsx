@@ -1,6 +1,7 @@
 import { TodoListView } from '@/components/features/todos/todo-list-view'
 import { getPageContext } from '@/lib/supabase/queries'
 import { getListStats } from '@/lib/utils/list-stats'
+import { getUserTimezone, todayInTimezone } from '@/lib/utils/timezone'
 
 export default async function TodosPage() {
   const { supabase, householdId } = await getPageContext()
@@ -23,7 +24,7 @@ export default async function TodosPage() {
       .eq('household_id', householdId),
   ])
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayInTimezone(await getUserTimezone())
 
   const todoLists = (listsResult.data || []).map((list) => ({
     ...list,

@@ -1,3 +1,5 @@
+import { toLocalDateIso } from './calendar'
+
 interface TodoItemForStats {
   status: string
   priority: string
@@ -13,7 +15,7 @@ export interface ListStats {
 }
 
 export function getListStats(items: TodoItemForStats[], today?: string): ListStats {
-  const todayStr = today ?? new Date().toISOString().split('T')[0]
+  const todayStr = today ?? toLocalDateIso(new Date())
   let completed = 0
   let overdue = 0
   let highPriority = 0

@@ -1,21 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { getWeekStart, getWeekDays, formatWeekLabel, getOrderedDayNames } from './week'
+import { toLocalDateIso } from './calendar'
 
 describe('getWeekStart (Monday default)', () => {
   it('returns Monday for a Wednesday', () => {
     const wed = new Date('2026-03-11') // Wednesday
     const monday = getWeekStart(wed)
-    expect(monday.toISOString().split('T')[0]).toBe('2026-03-09')
+    expect(toLocalDateIso(monday)).toBe('2026-03-09')
   })
 
   it('returns same day if already Monday', () => {
     const mon = new Date('2026-03-09')
-    expect(getWeekStart(mon).toISOString().split('T')[0]).toBe('2026-03-09')
+    expect(toLocalDateIso(getWeekStart(mon))).toBe('2026-03-09')
   })
 
   it('handles Sunday (returns previous Monday)', () => {
     const sun = new Date('2026-03-15')
-    expect(getWeekStart(sun).toISOString().split('T')[0]).toBe('2026-03-09')
+    expect(toLocalDateIso(getWeekStart(sun))).toBe('2026-03-09')
   })
 })
 
@@ -23,34 +24,34 @@ describe('getWeekStart (Friday start)', () => {
   // weekStartDay = 5 (Friday)
   it('returns same day if already Friday', () => {
     const fri = new Date('2026-03-13') // Friday
-    expect(getWeekStart(fri, 5).toISOString().split('T')[0]).toBe('2026-03-13')
+    expect(toLocalDateIso(getWeekStart(fri, 5))).toBe('2026-03-13')
   })
 
   it('returns previous Friday for a Wednesday', () => {
     const wed = new Date('2026-03-11') // Wednesday
-    expect(getWeekStart(wed, 5).toISOString().split('T')[0]).toBe('2026-03-06')
+    expect(toLocalDateIso(getWeekStart(wed, 5))).toBe('2026-03-06')
   })
 
   it('returns previous Friday for a Saturday', () => {
     const sat = new Date('2026-03-14') // Saturday
-    expect(getWeekStart(sat, 5).toISOString().split('T')[0]).toBe('2026-03-13')
+    expect(toLocalDateIso(getWeekStart(sat, 5))).toBe('2026-03-13')
   })
 
   it('returns previous Friday for a Thursday', () => {
     const thu = new Date('2026-03-12') // Thursday
-    expect(getWeekStart(thu, 5).toISOString().split('T')[0]).toBe('2026-03-06')
+    expect(toLocalDateIso(getWeekStart(thu, 5))).toBe('2026-03-06')
   })
 })
 
 describe('getWeekStart (Sunday start)', () => {
   it('returns same day if already Sunday', () => {
     const sun = new Date('2026-03-15') // Sunday
-    expect(getWeekStart(sun, 0).toISOString().split('T')[0]).toBe('2026-03-15')
+    expect(toLocalDateIso(getWeekStart(sun, 0))).toBe('2026-03-15')
   })
 
   it('returns previous Sunday for a Wednesday', () => {
     const wed = new Date('2026-03-11') // Wednesday
-    expect(getWeekStart(wed, 0).toISOString().split('T')[0]).toBe('2026-03-08')
+    expect(toLocalDateIso(getWeekStart(wed, 0))).toBe('2026-03-08')
   })
 })
 

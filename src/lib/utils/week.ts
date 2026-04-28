@@ -1,3 +1,5 @@
+import { toLocalDateIso } from './calendar'
+
 /**
  * Get the start of the week containing `date`, where week starts on `weekStartDay`.
  * weekStartDay uses JS getDay() convention: 0=Sunday, 1=Monday, ..., 6=Saturday.
@@ -18,10 +20,7 @@ export function getWeekDays(weekStart: Date): string[] {
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart)
     d.setDate(d.getDate() + i)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    days.push(`${year}-${month}-${day}`)
+    days.push(toLocalDateIso(d))
   }
   return days
 }
