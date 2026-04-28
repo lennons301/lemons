@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { MonthGrid } from './month-grid'
 import { WeekGrid } from './week-grid'
+import { DayAgenda } from './day-agenda'
 import { EventDialog } from './event-dialog'
 import {
   formatMonthYear,
@@ -306,12 +307,25 @@ export function CalendarView({
           onEventClick={openEditDialog}
         />
       ) : (
-        <WeekGrid
-          weekStart={weekStart}
-          events={events}
-          onSlotClick={(date, hour) => openCreateDialog(date, hour)}
-          onEventClick={openEditDialog}
-        />
+        <>
+          {/* Mobile + tablet: day-agenda. Desktop: 7-day time grid. */}
+          <div className="lg:hidden">
+            <DayAgenda
+              weekStart={weekStart}
+              events={events}
+              onSlotClick={(date) => openCreateDialog(date)}
+              onEventClick={openEditDialog}
+            />
+          </div>
+          <div className="hidden lg:block">
+            <WeekGrid
+              weekStart={weekStart}
+              events={events}
+              onSlotClick={(date, hour) => openCreateDialog(date, hour)}
+              onEventClick={openEditDialog}
+            />
+          </div>
+        </>
       )}
 
       {/* Event dialog */}
