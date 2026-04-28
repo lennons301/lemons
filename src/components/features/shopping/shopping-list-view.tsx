@@ -93,14 +93,14 @@ export function ShoppingListView({ householdId, lists: initialLists }: ShoppingL
         <div className="space-y-2">
           {lists.map((list) => (
             <Link key={list.id} href={`/shopping/${list.id}`}>
-              <div className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors">
-                <div>
-                  <h3 className="font-medium">{list.title}</h3>
+              <div className="flex items-center justify-between gap-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-medium truncate">{list.title}</h3>
                   <p className="text-sm text-muted-foreground">
                     {list.completed_items}/{list.total_items} items done
                   </p>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground shrink-0">
                   {new Date(list.created_at).toLocaleDateString('en-GB')}
                 </div>
               </div>

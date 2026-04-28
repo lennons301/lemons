@@ -178,13 +178,13 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
           {/* Group toggle */}
           <div className="flex border rounded-md text-sm overflow-hidden">
             <button
-              className={`px-3 py-1.5 ${groupBy === 'location' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
+              className={`px-3 py-2 sm:py-1.5 ${groupBy === 'location' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
               onClick={() => setGroupBy('location')}
             >
               Location
             </button>
             <button
-              className={`px-3 py-1.5 ${groupBy === 'category' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
+              className={`px-3 py-2 sm:py-1.5 ${groupBy === 'category' ? 'bg-primary text-primary-foreground font-medium' : 'hover:bg-muted'}`}
               onClick={() => setGroupBy('category')}
             >
               Category
@@ -236,7 +236,7 @@ export function InventoryList({ items: initialItems, householdId }: InventoryLis
             </h2>
             {groupBy === 'location' && (
               <button
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 -mr-2 rounded hover:bg-muted/50"
                 onClick={() => {
                   setQuickAddLocation(quickAddLocation === key ? null : key as InventoryLocation)
                   setQuickAddValue('')
