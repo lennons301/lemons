@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2 } from 'lucide-react'
 import { getWeekStart, getWeekDays } from '@/lib/utils/week'
+import { toLocalDateIso } from '@/lib/utils/calendar'
 
 interface DraftItem {
   name: string
@@ -30,7 +31,7 @@ export function GenerateDialog({ open, onOpenChange, householdId, onConfirm }: G
   const [step, setStep] = useState<'dates' | 'review'>('dates')
   const [from, setFrom] = useState(() => {
     const ws = getWeekStart(new Date())
-    return ws.toISOString().split('T')[0]
+    return toLocalDateIso(ws)
   })
   const [to, setTo] = useState(() => {
     const ws = getWeekStart(new Date())

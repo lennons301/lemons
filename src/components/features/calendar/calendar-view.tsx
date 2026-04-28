@@ -14,6 +14,7 @@ import {
   getWeekEnd,
   getMonthRange,
   getWeekRange,
+  toLocalDateIso,
 } from '@/lib/utils/calendar'
 import type { CalendarEvent, CalendarEventWithProgress, EventCategory } from '@/types/calendar'
 import type { Person } from '@/types/person'
@@ -132,7 +133,7 @@ export function CalendarView({
   const openCreateDialog = (date?: Date, hour?: number) => {
     setEditingEvent(null)
     if (date) {
-      setDefaultDate(date.toISOString().split('T')[0])
+      setDefaultDate(toLocalDateIso(date))
       if (hour !== undefined) {
         setDefaultTime(`${String(hour).padStart(2, '0')}:00`)
         setDefaultAllDay(false)

@@ -7,7 +7,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-react'
-import { getWeekStart, formatWeekLabel, shiftWeek } from '@/lib/utils/week'
+import { formatWeekLabel, shiftWeek } from '@/lib/utils/week'
+import { toLocalDateIso } from '@/lib/utils/calendar'
 
 interface CopyWeekDialogProps {
   open: boolean
@@ -25,7 +26,7 @@ export function CopyWeekDialog({ open, onOpenChange, currentWeekStart, onCopy }:
   const handleCopy = async () => {
     setCopying(true)
     try {
-      await onCopy(sourceWeek.toISOString().split('T')[0])
+      await onCopy(toLocalDateIso(sourceWeek))
       onOpenChange(false)
     } finally {
       setCopying(false)

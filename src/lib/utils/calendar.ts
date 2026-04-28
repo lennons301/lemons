@@ -48,6 +48,42 @@ export function getMonthGridDays(year: number, month: number): Date[] {
   return days
 }
 
+/**
+ * Format a Date as YYYY-MM-DD using its local calendar date.
+ *
+ * Use this when the Date represents a moment in the local timezone (e.g.
+ * `new Date()` with `setHours(0,0,0,0)`). Prefer this over
+ * `date.toISOString().split('T')[0]`, which converts to UTC and yields the
+ * wrong day for any local-midnight Date east of UTC (e.g. BST).
+ */
+export function toLocalDateIso(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
+ * Format a Date as YYYY-MM-DD using its UTC calendar date.
+ *
+ * Use this when the Date is conceptually UTC-anchored (e.g. parsed from a
+ * `YYYY-MM-DD` string with `new Date('2026-04-28')`, which produces UTC
+ * midnight). Pairs with `setUTCDate` for date arithmetic.
+ */
+export function toUtcDateIso(date: Date): string {
+  const y = date.getUTCFullYear()
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const d = String(date.getUTCDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/** Shift a YYYY-MM-DD string by a whole number of days, returning YYYY-MM-DD. */
+export function addDaysToIsoDate(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return toUtcDateIso(d)
+}
+
 /** Check if two dates are the same calendar day. */
 export function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() &&

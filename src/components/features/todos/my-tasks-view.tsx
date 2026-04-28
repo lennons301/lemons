@@ -6,6 +6,7 @@ import { MyTasksItemRow } from './my-tasks-item-row'
 import { TodoItemDialog } from './todo-item-dialog'
 import type { MyTaskItem, TodoPriority } from '@/types/todos'
 import type { Person } from '@/types/person'
+import { toLocalDateIso } from '@/lib/utils/calendar'
 
 interface MyTasksViewProps {
   householdId: string
@@ -20,11 +21,11 @@ interface TimeBucket {
 function bucketItems(items: MyTaskItem[]): TimeBucket[] {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = toLocalDateIso(today)
 
   const endOfWeek = new Date(today)
   endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()))
-  const weekEndStr = endOfWeek.toISOString().split('T')[0]
+  const weekEndStr = toLocalDateIso(endOfWeek)
 
   const buckets: Record<string, MyTaskItem[]> = {
     'Overdue': [],

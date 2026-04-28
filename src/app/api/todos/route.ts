@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { AMALFI_HEX_SET } from '@/types/todos'
 import { getListStats } from '@/lib/utils/list-stats'
+import { getUserTimezone, todayInTimezone } from '@/lib/utils/timezone'
 
 const VALID_LIST_TYPES = new Set(['general', 'checklist', 'project'])
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayInTimezone(await getUserTimezone())
 
   const lists = (data || []).map((list) => ({
     ...list,

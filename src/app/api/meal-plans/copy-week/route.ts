@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { toUtcDateIso } from '@/lib/utils/calendar'
 
 // POST /api/meal-plans/copy-week — copy all entries from one week to another
 export async function POST(request: NextRequest) {
@@ -18,10 +19,11 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Calculate source week end (7 days from start)
-  const sourceStart = new Date(sourceWeekStart)
+  // sourceWeekStart is YYYY-MM-DD; anchor to UTC midnight so day arithmetic
+  // and formatting stay in UTC regardless of the server's local timezone.
+  const sourceStart = new Date(`${sourceWeekStart}T00:00:00Z`)
   const sourceEnd = new Date(sourceStart)
-  sourceEnd.setDate(sourceEnd.getDate() + 6)
+  sourceEnd.setUTCDate(sourceEnd.getUTCDate() + 6)
 
   // Fetch source week entries
   const { data: sourceEntries, error: fetchError } = await supabase
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     .select('*')
     .eq('household_id', household_id)
     .gte('date', sourceWeekStart)
-    .lte('date', sourceEnd.toISOString().split('T')[0])
+    .lte('date', toUtcDateIso(sourceEnd))
 
   if (fetchError) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
@@ -40,18 +42,18 @@ export async function POST(request: NextRequest) {
   }
 
   // Map entries to target week (same day offset)
-  const targetStart = new Date(targetWeekStart)
+  const targetStart = new Date(`${targetWeekStart}T00:00:00Z`)
   const newEntries = sourceEntries.map((entry) => {
-    const entryDate = new Date(entry.date)
+    const entryDate = new Date(`${entry.date}T00:00:00Z`)
     const dayOffset = Math.round(
       (entryDate.getTime() - sourceStart.getTime()) / (1000 * 60 * 60 * 24)
     )
     const targetDate = new Date(targetStart)
-    targetDate.setDate(targetDate.getDate() + dayOffset)
+    targetDate.setUTCDate(targetDate.getUTCDate() + dayOffset)
 
     return {
       household_id: entry.household_id,
-      date: targetDate.toISOString().split('T')[0],
+      date: toUtcDateIso(targetDate),
       meal_type: entry.meal_type,
       recipe_id: entry.recipe_id,
       custom_name: entry.custom_name,

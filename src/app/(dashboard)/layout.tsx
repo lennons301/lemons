@@ -3,6 +3,7 @@ import { getCachedClient, getCachedProfile, getUserHouseholds } from '@/lib/supa
 import { HouseholdProvider } from '@/components/providers/household-provider'
 import { Sidebar } from '@/components/features/navigation/sidebar'
 import { MobileHeader } from '@/components/features/navigation/mobile-header'
+import { TimezoneSync } from '@/components/timezone-sync'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { supabase, user } = await getCachedClient()
@@ -30,6 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialHouseholds={households}
       defaultHouseholdId={profile?.default_household_id ?? null}
     >
+      <TimezoneSync />
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex flex-1 flex-col">

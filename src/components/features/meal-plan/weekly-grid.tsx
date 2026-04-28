@@ -10,6 +10,7 @@ import { ChatDrawer } from './meal-gen/chat-drawer'
 import { RecentPlansDropdown } from './meal-gen/recent-plans-dropdown'
 import type { DraftRow } from './meal-gen/use-meal-gen-chat'
 import { getWeekStart, getWeekDays, getOrderedDayNames, formatWeekLabel, shiftWeek, MEAL_TYPES, type MealType } from '@/lib/utils/week'
+import { toLocalDateIso } from '@/lib/utils/calendar'
 import type { Person } from '@/types/person'
 
 interface WeeklyGridProps {
@@ -158,7 +159,7 @@ export function WeeklyGrid({ householdId, persons, weekStartDay = 1, mealGenEnab
   const getDraftsForCell = (date: string, mealType: string) =>
     drafts.filter((d) => d.date === date && d.meal_type === mealType)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = toLocalDateIso(new Date())
 
   return (
     <div className="space-y-4">
