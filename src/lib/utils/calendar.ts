@@ -120,6 +120,96 @@ export function formatTime(date: Date): string {
   return m === 0 ? `${hour}${suffix}` : `${hour}:${m.toString().padStart(2, '0')}${suffix}`
 }
 
+export interface OverlapPosition<T> {
+  event: T
+  /** Fraction of column width (0..1) the event occupies. */
+  widthFraction: number
+  /** Zero-based column slot the event sits in (0..numColumns-1). */
+  offsetIndex: number
+}
+
+/**
+ * Compute side-by-side layout positions for timed events that may overlap.
+ *
+ * Algorithm:
+ *   1. Sort events by start time.
+ *   2. Partition into transitive-overlap clusters: events whose intervals are
+ *      connected by any chain of pairwise overlaps.
+ *   3. Within each cluster, run first-fit column packing — assign each event
+ *      to the leftmost column whose previous occupant has already ended. The
+ *      cluster's column count is the maximum simultaneous overlap inside it.
+ *   4. Width is 1/numColumns *for that cluster only*, so a brief 3-way overlap
+ *      doesn't penalise non-overlapping events elsewhere in the day.
+ *
+ * The naive alternative — width = 1/clusterSize — over-narrows non-overlapping
+ * events that happen to share a transitive cluster (e.g. A overlaps B, B
+ * overlaps C, but A and C don't overlap: only 2 columns are needed, not 3).
+ */
+export function computeOverlapPositions<
+  T extends { start_datetime: string; end_datetime: string }
+>(events: T[]): OverlapPosition<T>[] {
+  if (events.length === 0) return []
+
+  const sorted = [...events].sort(
+    (a, b) =>
+      new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
+  )
+
+  // Step 1: partition into transitive-overlap clusters.
+  const clusters: T[][] = []
+  for (const evt of sorted) {
+    const evtStart = new Date(evt.start_datetime).getTime()
+    const evtEnd = new Date(evt.end_datetime).getTime()
+
+    let placed = false
+    for (const cluster of clusters) {
+      const overlaps = cluster.some((g) => {
+        const gStart = new Date(g.start_datetime).getTime()
+        const gEnd = new Date(g.end_datetime).getTime()
+        return evtStart < gEnd && evtEnd > gStart
+      })
+      if (overlaps) {
+        cluster.push(evt)
+        placed = true
+        break
+      }
+    }
+    if (!placed) clusters.push([evt])
+  }
+
+  // Step 2: first-fit column packing within each cluster.
+  const positioned: OverlapPosition<T>[] = []
+  for (const cluster of clusters) {
+    const columnEnds: number[] = []
+    const colByIndex: number[] = []
+
+    for (const evt of cluster) {
+      const evtStart = new Date(evt.start_datetime).getTime()
+      const evtEnd = new Date(evt.end_datetime).getTime()
+
+      let col = columnEnds.findIndex((end) => end <= evtStart)
+      if (col === -1) {
+        col = columnEnds.length
+        columnEnds.push(evtEnd)
+      } else {
+        columnEnds[col] = evtEnd
+      }
+      colByIndex.push(col)
+    }
+
+    const width = 1 / columnEnds.length
+    for (let i = 0; i < cluster.length; i++) {
+      positioned.push({
+        event: cluster[i],
+        widthFraction: width,
+        offsetIndex: colByIndex[i],
+      })
+    }
+  }
+
+  return positioned
+}
+
 /**
  * Check if an event overlaps a specific day.
  * Uses exclusive-end convention: event spans [start, end).

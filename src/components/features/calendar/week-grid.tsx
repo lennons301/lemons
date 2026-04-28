@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useEffect } from 'react'
-import { isSameDay, eventOverlapsDay } from '@/lib/utils/calendar'
+import { computeOverlapPositions, isSameDay, eventOverlapsDay } from '@/lib/utils/calendar'
 import { EventPill } from './event-pill'
 import { EventBlock } from './event-block'
 import type { CalendarEvent } from '@/types/calendar'
@@ -43,53 +43,11 @@ export function WeekGrid({ weekStart, events, onSlotClick, onEventClick }: WeekG
     return { allDayEvents: allDay, timedEvents: timed }
   }, [events])
 
-  // Get timed events per day with overlap computation
-  const timedByDay = useMemo(() => {
-    return days.map((day) => {
-      const dayEvts = timedEvents
-        .filter((e) => eventOverlapsDay(e, day))
-        .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
-
-      // Compute overlaps: group events that overlap each other.
-      // Note: this greedy grouping may over-narrow non-overlapping events within transitive groups.
-      // Acceptable simplification for Phase A.
-      const positioned: { event: CalendarEvent; widthFraction: number; offsetIndex: number }[] = []
-      const groups: CalendarEvent[][] = []
-
-      for (const evt of dayEvts) {
-        const evtStart = new Date(evt.start_datetime).getTime()
-        const evtEnd = new Date(evt.end_datetime).getTime()
-
-        // Find if this event overlaps with any existing group
-        let placed = false
-        for (const group of groups) {
-          const overlaps = group.some((g) => {
-            const gStart = new Date(g.start_datetime).getTime()
-            const gEnd = new Date(g.end_datetime).getTime()
-            return evtStart < gEnd && evtEnd > gStart
-          })
-          if (overlaps) {
-            group.push(evt)
-            placed = true
-            break
-          }
-        }
-        if (!placed) {
-          groups.push([evt])
-        }
-      }
-
-      // Assign width fractions and offsets
-      for (const group of groups) {
-        const width = 1 / group.length
-        group.forEach((evt, idx) => {
-          positioned.push({ event: evt, widthFraction: width, offsetIndex: idx })
-        })
-      }
-
-      return positioned
-    })
-  }, [days, timedEvents])
+  // Side-by-side positions for timed events on each day.
+  const timedByDay = useMemo(
+    () => days.map((day) => computeOverlapPositions(timedEvents.filter((e) => eventOverlapsDay(e, day)))),
+    [days, timedEvents]
+  )
 
   // Auto-scroll to 8am on mount
   useEffect(() => {
