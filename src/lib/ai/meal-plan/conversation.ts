@@ -80,18 +80,33 @@ export async function runTurn(
     messages.push({ role: 'assistant', content: response.content })
 
     if (response.stop_reason === 'tool_use' && toolUses.length > 0) {
-      const toolResults: any[] = []
+      const sdkToolResults: any[] = []
+      const persistedToolResults: { tool_call_id: string; content: unknown; is_error: boolean }[] = []
       for (const tu of toolUses) {
         const result = await dispatch(tu.name as MealGenToolName, ctx, tu.input)
         toolCallsMade += 1
-        toolResults.push({
+        sdkToolResults.push({
           type: 'tool_result',
           tool_use_id: tu.id,
           content: JSON.stringify(result.content),
           is_error: result.is_error ?? false,
         })
+        persistedToolResults.push({
+          tool_call_id: tu.id,
+          content: result.content,
+          is_error: result.is_error ?? false,
+        })
       }
-      messages.push({ role: 'user', content: toolResults })
+      messages.push({ role: 'user', content: sdkToolResults })
+      // Persist the tool envelope so the next turn's replay (envelopeToSdk) emits the
+      // tool_result blocks the API requires after every tool_use. Without this, the
+      // second user message hits 400 "ids were found without tool_blocks".
+      assistantMessages.push({
+        role: 'tool',
+        content: '',
+        tool_results: persistedToolResults,
+        ts: now(),
+      })
       continue
     }
 
@@ -103,9 +118,10 @@ export async function runTurn(
     break
   }
 
-  // If we exited the for-loop without break, we hit the tool cap.
+  // If we exited the for-loop without break, the tail is a 'tool' envelope (we ran
+  // tools and never got back a non-tool-use response) — that means we hit the cap.
   if (stoppedReason === 'end_turn' && assistantMessages.length > 0 &&
-      (assistantMessages[assistantMessages.length - 1].tool_calls?.length ?? 0) > 0) {
+      assistantMessages[assistantMessages.length - 1].role === 'tool') {
     stoppedReason = 'tool_cap'
   }
 

@@ -52,7 +52,9 @@ describe('meal-gen lifecycle (library only — no HTTP)', () => {
 
     expect(result.stoppedReason).toBe('end_turn')
     expect(result.toolCallsMade).toBe(1)
-    expect(result.assistantMessages).toHaveLength(2)
+    // assistant(tool_use) + tool(tool_result) + assistant(end_turn text)
+    expect(result.assistantMessages).toHaveLength(3)
+    expect(result.assistantMessages.map((m) => m.role)).toEqual(['assistant', 'tool', 'assistant'])
     expect(fakeDispatch).toHaveBeenCalledWith('propose_plan', ctx, expect.any(Object))
 
     // --- Stage 2: accept the conversation ---
