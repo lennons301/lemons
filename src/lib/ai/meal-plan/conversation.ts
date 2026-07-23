@@ -53,6 +53,10 @@ export async function runTurn(
   for (let turn = 0; turn < MEAL_GEN_MAX_TOOL_TURNS; turn++) {
     const response = await client.messages.create({
       model: MEAL_GEN_MODEL,
+      // Sonnet 5 defaults to adaptive thinking, which would emit thinking blocks
+      // that envelopeToSdk's lossy persistence can't replay and that count
+      // against MEAL_GEN_MAX_TOKENS. Keep it off until history stores raw blocks.
+      thinking: { type: 'disabled' },
       max_tokens: MEAL_GEN_MAX_TOKENS,
       system: [{ type: 'text', text: state.systemPrompt, cache_control: { type: 'ephemeral' } }],
       tools: [...TOOL_SCHEMAS, WEB_SEARCH_SERVER_TOOL as any],
