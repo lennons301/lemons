@@ -147,7 +147,10 @@ export async function extractRecipeFromImages(
     : EXTRACTION_PROMPT
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-5',
+    // Sonnet 5 runs adaptive thinking by default; disable it so the 4096-token
+    // budget is spent on the JSON payload, not reasoning.
+    thinking: { type: 'disabled' },
     max_tokens: 4096,
     messages: [
       {

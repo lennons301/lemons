@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { validateExtractionResult, type ExtractionResult } from './extract-recipe'
 
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-5'
 const MAX_HTML_CHARS = 200_000
 
 export function stripHtml(html: string): string {
@@ -50,6 +50,9 @@ export async function extractRecipeFromUrl(url: string, apiKey?: string): Promis
   const client = new Anthropic(apiKey ? { apiKey } : undefined)
   const completion = await client.messages.create({
     model: MODEL,
+    // Sonnet 5 runs adaptive thinking by default; disable it so the 4096-token
+    // budget is spent on the JSON payload, not reasoning.
+    thinking: { type: 'disabled' },
     max_tokens: 4096,
     messages: [
       {
