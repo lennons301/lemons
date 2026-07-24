@@ -158,3 +158,17 @@ Full design: `docs/plans/2026-03-02-lemons-design.md`
 Platform standards and choices: see /workspace/platform/ (in agent containers)
 or ~/code/platform/ (on local machines).
 This project's registry entry: products/lemons.yaml
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as GitHub Issues on `lennons301/lemons`, operated via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
