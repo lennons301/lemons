@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MemberPicker } from '@/components/features/members/member-picker'
+import { OutOfRotationBadge } from '@/components/features/recipes/out-of-rotation-badge'
 import { Loader2, Minus, Plus, BookOpen } from 'lucide-react'
 import type { Person } from '@/types/person'
 
@@ -131,7 +132,7 @@ export function AddMealDialog({
                     <button
                       key={recipe.id}
                       type="button"
-                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                      className={`w-full flex items-center justify-between gap-2 text-left px-3 py-2 rounded-md text-sm transition-colors ${
                         selectedRecipeId === recipe.id
                           ? 'bg-primary text-primary-foreground'
                           : 'hover:bg-muted'
@@ -141,7 +142,8 @@ export function AddMealDialog({
                         setServings(recipe.servings || 2)
                       }}
                     >
-                      {recipe.title}
+                      <span className="min-w-0 truncate">{recipe.title}</span>
+                      <OutOfRotationBadge inRotation={recipe.in_rotation} />
                     </button>
                   ))}
                 </div>
