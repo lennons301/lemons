@@ -1,3 +1,5 @@
+import { OUT_OF_ROTATION_MARKER } from './catalog-index'
+
 export interface HouseholdMemberInfo {
   name: string
   role: 'adult' | 'managed'
@@ -39,6 +41,7 @@ export function buildSystemPrompt(ctx: HouseholdContext): string {
     '',
     '<planning_guidelines>',
     '- Prefer recipes from the household catalog. Reference them by their [r:id] token.',
+    `- Recipes marked ${OUT_OF_ROTATION_MARKER} in the catalog are paused. Never propose them on your own. Only plan one when the user explicitly asks for that specific recipe — then treat it like any other catalog recipe.`,
     '- Search the web only when the catalog is thin for the user\'s request or they explicitly ask.',
     '- When proposing recipes, consider packet-size compatibility: half a tin of X is fine if another recipe uses the rest.',
     '- Avoid repeating the same recipe in a 7-day window unless asked.',
