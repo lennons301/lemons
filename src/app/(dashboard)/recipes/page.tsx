@@ -4,49 +4,42 @@ import { Button } from '@/components/ui/button'
 import { RecipeCard } from '@/components/features/recipes/recipe-card'
 import { RecipeSearch } from '@/components/features/recipes/recipe-search'
 import { getPageContext } from '@/lib/supabase/queries'
+import { countActiveFilters, filterRecipes, parseRecipeFilters } from '@/lib/utils/recipe-filters'
 
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; tag?: string; author?: string; book?: string; member?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const { search, tag, author, book, member } = await searchParams
+  const params = await searchParams
+  const filters = parseRecipeFilters(params)
+  const author = typeof params.author === 'string' ? params.author : undefined
+  const book = typeof params.book === 'string' ? params.book : undefined
   const { supabase, householdId } = await getPageContext()
 
-  // Build recipes query with optional search filter
-  let recipesQuery = supabase
-    .from('recipes')
-    .select(`
-      *,
-      recipe_tags(tag_name),
-      recipe_images(id, url, type, sort_order),
-      recipe_members(person_id)
-    `)
-    .eq('household_id', householdId)
-    .order('created_at', { ascending: false })
-
-  if (search) {
-    recipesQuery = recipesQuery.ilike('title', `%${search}%`)
-  }
-
-  // Fetch persons and recipes in parallel
+  // Fetch persons and recipes in parallel; filtering is client/JS-side at household scale
   const [personsResult, recipesResult] = await Promise.all([
     supabase
       .from('household_persons')
       .select('id, display_name, date_of_birth, person_type')
       .eq('household_id', householdId),
-    recipesQuery,
+    supabase
+      .from('recipes')
+      .select(`
+        *,
+        recipe_tags(tag_name),
+        recipe_images(id, url, type, sort_order),
+        recipe_members(person_id)
+      `)
+      .eq('household_id', householdId)
+      .order('created_at', { ascending: false }),
   ])
 
   const persons = personsResult.data
   const recipes = recipesResult.data
+  const personIds = (persons || []).map((p) => p.id)
 
-  let filteredRecipes = recipes || []
-  if (tag) {
-    filteredRecipes = filteredRecipes.filter((r) =>
-      r.recipe_tags?.some((t) => t.tag_name === tag)
-    )
-  }
+  let filteredRecipes = filterRecipes(recipes || [], filters, personIds)
   if (author) {
     filteredRecipes = filteredRecipes.filter((r) =>
       r.source_author?.toLowerCase() === author.toLowerCase()
@@ -56,21 +49,6 @@ export default async function RecipesPage({
     filteredRecipes = filteredRecipes.filter((r) =>
       r.source_book?.toLowerCase() === book.toLowerCase()
     )
-  }
-  if (member) {
-    if (member === 'everyone') {
-      // Recipes where ALL household persons are tagged
-      const personIds = (persons || []).map((p) => p.id)
-      filteredRecipes = filteredRecipes.filter((r) =>
-        personIds.every((pid: string) =>
-          r.recipe_members?.some((rm) => rm.person_id === pid)
-        )
-      )
-    } else {
-      filteredRecipes = filteredRecipes.filter((r) =>
-        r.recipe_members?.some((rm) => rm.person_id === member)
-      )
-    }
   }
 
   // Collect tags with counts for the filter, sorted by frequency
@@ -84,6 +62,9 @@ export default async function RecipesPage({
     .sort((a, b) => b[1] - a[1])
     .map(([name, count]) => ({ name, count }))
 
+  const hasAnyFilter =
+    Boolean(filters.search) || countActiveFilters(filters) > 0 || Boolean(author) || Boolean(book)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,20 +77,15 @@ export default async function RecipesPage({
         </Link>
       </div>
 
-      <RecipeSearch
-        tagCounts={tagCounts}
-        activeTag={tag || null}
-        persons={persons || []}
-        activeMember={member || null}
-      />
+      <RecipeSearch tagCounts={tagCounts} persons={persons || []} filters={filters} />
 
       {filteredRecipes.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted-foreground text-lg">
-            {search || tag || author || book || member ? 'No recipes match your search.' : 'No recipes yet.'}
+            {hasAnyFilter ? 'No recipes match your search.' : 'No recipes yet.'}
           </p>
           <p className="text-muted-foreground mt-1 text-sm">
-            {!search && !tag && !author && !book && !member && 'Add your first recipe to get started.'}
+            {!hasAnyFilter && 'Add your first recipe to get started.'}
           </p>
         </div>
       ) : (
