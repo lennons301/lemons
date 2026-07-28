@@ -14,9 +14,23 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
+import {
+  EVERYONE,
+  countActiveFilters,
+  parseRecipeFilters,
+  serializeRecipeFilters,
+  type RecipeFilterState,
+  type RotationFilter,
+} from '@/lib/utils/recipe-filters'
 import type { Person } from '@/types/person'
 
 const MAX_QUICK_TAGS = 5
+
+const ROTATION_OPTIONS: { value: RotationFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'in', label: 'In rotation' },
+  { value: 'out', label: 'Out of rotation' },
+]
 
 interface TagCount {
   name: string
@@ -25,40 +39,65 @@ interface TagCount {
 
 interface RecipeSearchProps {
   tagCounts: TagCount[]
-  activeTag: string | null
   persons?: Person[]
-  activeMember?: string | null
+  filters: RecipeFilterState
 }
 
-export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember = null }: RecipeSearchProps) {
+export function RecipeSearch({ tagCounts, persons = [], filters }: RecipeSearchProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [searchValue, setSearchValue] = useState(searchParams.get('search') || '')
+  const [searchValue, setSearchValue] = useState(filters.search)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [tagQuery, setTagQuery] = useState('')
 
-  const updateParams = useCallback(
-    (key: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
+  const applyFilters = useCallback(
+    (next: Partial<RecipeFilterState>) => {
+      const current = parseRecipeFilters(Object.fromEntries(searchParams.entries()))
+      const params = serializeRecipeFilters({ ...current, ...next }, searchParams)
       router.push(`/recipes?${params.toString()}`)
     },
     [router, searchParams]
   )
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateParams('search', searchValue || null)
+  const toggleTag = (name: string) => {
+    applyFilters({
+      tags: filters.tags.includes(name)
+        ? filters.tags.filter((t) => t !== name)
+        : [...filters.tags, name],
+    })
   }
 
+  const toggleMember = (id: string) => {
+    if (id === EVERYONE) {
+      // Everyone supersedes individual selections
+      applyFilters({ members: filters.members.includes(EVERYONE) ? [] : [EVERYONE] })
+    } else if (filters.members.includes(EVERYONE)) {
+      applyFilters({ members: [id] })
+    } else {
+      applyFilters({
+        members: filters.members.includes(id)
+          ? filters.members.filter((m) => m !== id)
+          : [...filters.members, id],
+      })
+    }
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    applyFilters({ search: searchValue })
+  }
+
+  const activeCount = countActiveFilters(filters)
+  const tagCountMap = new Map(tagCounts.map((t) => [t.name, t.count]))
   const quickTags = tagCounts.slice(0, MAX_QUICK_TAGS)
-  const hasMoreTags = tagCounts.length > MAX_QUICK_TAGS
-  const hasActiveFilters = activeTag !== null || activeMember !== null
-  // Active tag is in the overflow (not in quick tags)
-  const activeTagInOverflow = activeTag && !quickTags.some(t => t.name === activeTag)
+  // Selected tags outside the quick strip stay visible next to it
+  const selectedOverflowTags = filters.tags.filter(
+    (name) => !quickTags.some((t) => t.name === name)
+  )
+  const unselectedTags = tagCounts.filter((t) => !filters.tags.includes(t.name))
+  const visibleUnselectedTags = tagQuery
+    ? unselectedTags.filter((t) => t.name.toLowerCase().includes(tagQuery.toLowerCase()))
+    : unselectedTags
 
   return (
     <div className="space-y-3">
@@ -75,7 +114,7 @@ export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember 
             type="button"
             onClick={() => {
               setSearchValue('')
-              updateParams('search', null)
+              applyFilters({ search: '' })
             }}
             className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
           >
@@ -89,39 +128,40 @@ export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember 
           {quickTags.map((tag) => (
             <Badge
               key={tag.name}
-              variant={tag.name === activeTag ? 'default' : 'outline'}
+              variant={filters.tags.includes(tag.name) ? 'default' : 'outline'}
               className="cursor-pointer"
-              onClick={() => updateParams('tag', tag.name === activeTag ? null : tag.name)}
+              onClick={() => toggleTag(tag.name)}
             >
               {tag.name}
+              <span className="ml-1 opacity-60">{tag.count}</span>
             </Badge>
           ))}
-          {activeTagInOverflow && (
+          {selectedOverflowTags.map((name) => (
             <Badge
+              key={name}
               variant="default"
               className="cursor-pointer"
-              onClick={() => updateParams('tag', null)}
+              onClick={() => toggleTag(name)}
             >
-              {activeTag}
+              {name}
+              <span className="ml-1 opacity-60">{tagCountMap.get(name) ?? 0}</span>
               <X className="ml-1 h-3 w-3" />
             </Badge>
-          )}
-          {(hasMoreTags || persons.length > 0) && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 gap-1 px-2 text-xs"
-              onClick={() => setFilterOpen(true)}
-            >
-              <SlidersHorizontal className="h-3 w-3" />
-              Filters
-              {hasActiveFilters && (
-                <span className="bg-primary text-primary-foreground ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
-                  {(activeTag ? 1 : 0) + (activeMember ? 1 : 0)}
-                </span>
-              )}
-            </Button>
-          )}
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-6 gap-1 px-2 text-xs"
+            onClick={() => setFilterOpen(true)}
+          >
+            <SlidersHorizontal className="h-3 w-3" />
+            Filters
+            {activeCount > 0 && (
+              <span className="bg-primary text-primary-foreground ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
+                {activeCount}
+              </span>
+            )}
+          </Button>
         </div>
       )}
 
@@ -130,27 +170,50 @@ export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember 
           <SheetHeader>
             <SheetTitle>Filter Recipes</SheetTitle>
             <SheetDescription>
-              Filter by tags and household members
+              Filter by tags, household members, and rotation
             </SheetDescription>
           </SheetHeader>
           <div className="space-y-6 overflow-y-auto p-4">
             {tagCounts.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Tags</h3>
+                {filters.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {filters.tags.map((name) => (
+                      <Badge
+                        key={name}
+                        variant="default"
+                        className="cursor-pointer"
+                        onClick={() => toggleTag(name)}
+                      >
+                        {name}
+                        <span className="ml-1 opacity-60">{tagCountMap.get(name) ?? 0}</span>
+                        <X className="ml-1 h-3 w-3" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <Input
+                  placeholder="Search tags..."
+                  value={tagQuery}
+                  onChange={(e) => setTagQuery(e.target.value)}
+                  className="h-8"
+                />
                 <div className="flex flex-wrap gap-1.5">
-                  {tagCounts.map((tag) => (
+                  {visibleUnselectedTags.map((tag) => (
                     <Badge
                       key={tag.name}
-                      variant={tag.name === activeTag ? 'default' : 'outline'}
+                      variant="outline"
                       className="cursor-pointer"
-                      onClick={() => {
-                        updateParams('tag', tag.name === activeTag ? null : tag.name)
-                      }}
+                      onClick={() => toggleTag(tag.name)}
                     >
                       {tag.name}
                       <span className="ml-1 opacity-60">{tag.count}</span>
                     </Badge>
                   ))}
+                  {visibleUnselectedTags.length === 0 && (
+                    <p className="text-muted-foreground text-xs">No tags match.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -159,18 +222,18 @@ export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember 
                 <h3 className="text-sm font-medium">Suitable for</h3>
                 <div className="flex flex-wrap gap-1.5">
                   <Badge
-                    variant={activeMember === 'everyone' ? 'default' : 'outline'}
+                    variant={filters.members.includes(EVERYONE) ? 'default' : 'outline'}
                     className="cursor-pointer"
-                    onClick={() => updateParams('member', activeMember === 'everyone' ? null : 'everyone')}
+                    onClick={() => toggleMember(EVERYONE)}
                   >
                     Everyone
                   </Badge>
                   {persons.map((person) => (
                     <Badge
                       key={person.id}
-                      variant={person.id === activeMember ? 'default' : 'outline'}
+                      variant={filters.members.includes(person.id) ? 'default' : 'outline'}
                       className="cursor-pointer"
-                      onClick={() => updateParams('member', person.id === activeMember ? null : person.id)}
+                      onClick={() => toggleMember(person.id)}
                     >
                       <span
                         className={`mr-1 inline-block h-2 w-2 rounded-full ${getMemberBgClass(person.id)}`}
@@ -181,16 +244,26 @@ export function RecipeSearch({ tagCounts, activeTag, persons = [], activeMember 
                 </div>
               </div>
             )}
-            {hasActiveFilters && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Rotation</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {ROTATION_OPTIONS.map((option) => (
+                  <Badge
+                    key={option.value}
+                    variant={filters.rotation === option.value ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => applyFilters({ rotation: option.value })}
+                  >
+                    {option.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            {activeCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  const params = new URLSearchParams(searchParams.toString())
-                  params.delete('tag')
-                  params.delete('member')
-                  router.push(`/recipes?${params.toString()}`)
-                }}
+                onClick={() => applyFilters({ tags: [], members: [], rotation: 'all' })}
               >
                 Clear all filters
               </Button>
