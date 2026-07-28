@@ -154,6 +154,40 @@ export async function PUT(
   return NextResponse.json(fullRecipe)
 }
 
+// PATCH /api/recipes/[id] — partial update (rotation state)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await request.json()
+  const { in_rotation } = body
+
+  if (typeof in_rotation !== 'boolean') {
+    return NextResponse.json({ error: 'in_rotation must be a boolean' }, { status: 400 })
+  }
+
+  const { data, error } = await supabase
+    .from('recipes')
+    .update({ in_rotation })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    const status = error.code === 'PGRST116' ? 404 : 500
+    return NextResponse.json({ error: error.message }, { status })
+  }
+
+  return NextResponse.json(data)
+}
+
 // DELETE /api/recipes/[id] — delete recipe
 export async function DELETE(
   request: NextRequest,

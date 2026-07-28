@@ -834,6 +834,7 @@ export type Database = {
           source_url: string | null
           source_author: string | null
           source_book: string | null
+          in_rotation: boolean
           household_id: string
           created_by: string
           created_at: string
@@ -850,6 +851,7 @@ export type Database = {
           source_url?: string | null
           source_author?: string | null
           source_book?: string | null
+          in_rotation?: boolean
           household_id: string
           created_by: string
           created_at?: string
@@ -866,6 +868,7 @@ export type Database = {
           source_url?: string | null
           source_author?: string | null
           source_book?: string | null
+          in_rotation?: boolean
           household_id?: string
           created_by?: string
           created_at?: string
