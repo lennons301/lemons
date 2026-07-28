@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { scaleIngredients } from '@/lib/utils/scaling'
 import type { Person } from '@/types/person'
 import { getMemberBgClass } from '@/lib/utils/member-colors'
+import { OutOfRotationBadge } from './out-of-rotation-badge'
+import { RotationToggle } from './rotation-toggle'
 
 interface RecipeDetailProps {
   persons?: Person[]
@@ -28,6 +30,7 @@ interface RecipeDetailProps {
     source_url: string | null
     source_author: string | null
     source_book: string | null
+    in_rotation?: boolean
     recipe_ingredients: {
       id: string
       recipe_id: string
@@ -96,6 +99,10 @@ export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
           </Button>
         </Link>
         <div className="flex-1" />
+        <RotationToggle
+          recipeId={recipe.id}
+          inRotation={recipe.in_rotation !== false}
+        />
         <Link href={`/recipes/${recipe.id}/edit`}>
           <Button variant="outline" size="sm">
             <Edit className="mr-1 h-4 w-4" />
@@ -129,6 +136,7 @@ export function RecipeDetail({ recipe, persons = [] }: RecipeDetailProps) {
 
       <div>
         <h1 className="text-3xl font-bold">{recipe.title}</h1>
+        <OutOfRotationBadge inRotation={recipe.in_rotation} className="mt-2" />
         {recipe.description && (
           <p className="text-muted-foreground mt-2">{recipe.description}</p>
         )}
