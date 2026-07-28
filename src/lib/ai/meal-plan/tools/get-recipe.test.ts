@@ -53,4 +53,16 @@ describe('getRecipe', () => {
     const result = await getRecipe(ctx, { recipe_id: 'missing' })
     expect(result.is_error).toBe(true)
   })
+
+  it('resolves out-of-rotation recipes (query filters only by id and household)', async () => {
+    // The fake query chain only supports .eq(id).eq(household_id); adding a
+    // rotation filter to getRecipe would break this test. Out-of-rotation
+    // recipes must stay fetchable so the user can explicitly plan one.
+    const ctx = fakeContext(
+      { id: 'r9', title: 'Lasagne', description: null, servings: 4, prep_time: 20, cook_time: 60, instructions: [] },
+    )
+    const result = await getRecipe(ctx, { recipe_id: 'r9' })
+    expect(result.is_error).toBeFalsy()
+    expect(result.content).toMatchObject({ id: 'r9', title: 'Lasagne' })
+  })
 })
