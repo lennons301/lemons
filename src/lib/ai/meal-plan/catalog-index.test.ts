@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildCatalogIndex, type CatalogRecipe } from './catalog-index'
+import { buildCatalogIndex, OUT_OF_ROTATION_MARKER, type CatalogRecipe } from './catalog-index'
 
 describe('buildCatalogIndex', () => {
   it('returns empty string for empty input', () => {
@@ -34,5 +34,35 @@ describe('buildCatalogIndex', () => {
       { id: 'a', title: 'Alpha', tags: [] },
     ]
     expect(buildCatalogIndex(recipes).split('\n')[0]).toContain('Alpha')
+  })
+
+  it('appends the out-of-rotation marker to flagged recipes', () => {
+    const recipes: CatalogRecipe[] = [
+      { id: 'a', title: 'Lasagne', tags: ['italian', 'pasta'], inRotation: false },
+    ]
+    expect(buildCatalogIndex(recipes)).toBe('[r:a] Lasagne | italian, pasta [out of rotation]')
+  })
+
+  it('does not mark recipes that are in rotation or unflagged', () => {
+    const recipes: CatalogRecipe[] = [
+      { id: 'a', title: 'Curry', tags: ['thai'], inRotation: true },
+      { id: 'b', title: 'Stew', tags: [] },
+    ]
+    expect(buildCatalogIndex(recipes)).toBe('[r:a] Curry | thai\n[r:b] Stew | ')
+  })
+
+  it('keeps alphabetical order with the marker present', () => {
+    const recipes: CatalogRecipe[] = [
+      { id: 'c', title: 'Curry', tags: [], inRotation: true },
+      { id: 'a', title: 'Apple Pie', tags: [], inRotation: false },
+      { id: 'z', title: 'Ziti', tags: [], inRotation: false },
+    ]
+    expect(buildCatalogIndex(recipes)).toBe(
+      '[r:a] Apple Pie |  [out of rotation]\n[r:c] Curry | \n[r:z] Ziti |  [out of rotation]',
+    )
+  })
+
+  it('exports a marker constant matching the catalog line format', () => {
+    expect(OUT_OF_ROTATION_MARKER).toBe('[out of rotation]')
   })
 })

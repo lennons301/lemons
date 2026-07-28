@@ -54,8 +54,8 @@ describe('loadConversationContext', () => {
         select: () => ({
           eq: () => Promise.resolve({
             data: [
-              { id: 'r1', title: 'Curry', recipe_tags: [{ tag_name: 'spicy' }, { tag_name: 'dinner' }] },
-              { id: 'r2', title: 'Pasta', recipe_tags: [] },
+              { id: 'r1', title: 'Curry', in_rotation: true, recipe_tags: [{ tag_name: 'spicy' }, { tag_name: 'dinner' }] },
+              { id: 'r2', title: 'Pasta', in_rotation: false, recipe_tags: [] },
             ],
             error: null,
           }),
@@ -72,7 +72,8 @@ describe('loadConversationContext', () => {
     expect(result!.household.members[1]).toMatchObject({ name: 'Kid1', role: 'managed' })
     expect(result!.household.staples).toEqual(['olive oil', 'salt'])
     expect(result!.catalogRecipes.length).toBe(2)
-    expect(result!.catalogRecipes[0]).toMatchObject({ id: 'r1', title: 'Curry', tags: ['spicy', 'dinner'] })
+    expect(result!.catalogRecipes[0]).toMatchObject({ id: 'r1', title: 'Curry', tags: ['spicy', 'dinner'], inRotation: true })
+    expect(result!.catalogRecipes[1]).toMatchObject({ id: 'r2', title: 'Pasta', inRotation: false })
   })
 
   it('returns null when conversation is not found', async () => {

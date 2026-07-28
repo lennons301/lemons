@@ -49,7 +49,7 @@ export async function loadConversationContext(
   const [personsRes, staplesRes, recipesRes] = await Promise.all([
     supabase.from('household_persons').select('id, display_name, date_of_birth, person_type').eq('household_id', conversation.household_id),
     supabase.from('household_staples').select('name').eq('household_id', conversation.household_id),
-    supabase.from('recipes').select('id, title, recipe_tags(tag_name)').eq('household_id', conversation.household_id),
+    supabase.from('recipes').select('id, title, in_rotation, recipe_tags(tag_name)').eq('household_id', conversation.household_id),
   ])
 
   const members = (personsRes.data ?? []).map(personToMember)
@@ -58,6 +58,7 @@ export async function loadConversationContext(
     id: r.id,
     title: r.title,
     tags: ((r.recipe_tags ?? []) as Array<{ tag_name: string }>).map((t) => t.tag_name),
+    inRotation: r.in_rotation ?? true,
   }))
 
   const rawKey = householdKey?.anthropic_api_key?.trim()

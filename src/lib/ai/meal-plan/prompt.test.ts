@@ -32,6 +32,13 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Avoid repeating the same recipe')
   })
 
+  it('includes the standing rule for out-of-rotation recipes', () => {
+    const prompt = buildSystemPrompt(context)
+    expect(prompt).toContain('[out of rotation]')
+    expect(prompt).toContain('Never propose them on your own')
+    expect(prompt).toContain('explicitly asks')
+  })
+
   it('includes an empty catalog marker when catalog is empty', () => {
     const prompt = buildSystemPrompt({ ...context, catalogIndex: '' })
     expect(prompt).toContain('(no recipes yet)')
