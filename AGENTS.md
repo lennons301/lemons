@@ -138,6 +138,7 @@ Production:    Doppler prd config → production Supabase project
 - **Item groups** use `group_name` on `todo_items`. UI supports collapsible sections or tabs (persisted in localStorage per list).
 - **Event-linked lists** use `event_id` FK on `todo_lists`. One list per event. Calendar events show linked list progress.
 - **Recipe rotation** is a household-wide `in_rotation` boolean on `recipes` (default true). Out-of-rotation recipes stay in the library and manual meal picker with an "Out of rotation" badge; toggle via `PATCH /api/recipes/[id]` from the detail page or library card.
+- **Recipe library filters** are multi-select and live in URL search params (`search`, comma-separated `tags` and `members`, `rotation=in|out`): OR within tags, match-all within members (`everyone` = all household persons), AND across facet groups. Composition logic in `src/lib/utils/recipe-filters.ts`; legacy single-value `tag`/`member` params are accepted as aliases.
 - **Packet sizes** live in `packet_sizes` (global rows, `household_id IS NULL`) with optional household overrides. Seeded from `supabase/seed_data/packet_sizes_uk.json` via `supabase/migrations/00017_packet_sizes_seed.sql` (regenerate with `npx tsx scripts/generate-packet-sizes-migration.ts`).
 
 ## Key Files
