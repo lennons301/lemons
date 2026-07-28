@@ -137,6 +137,7 @@ Production:    Doppler prd config → production Supabase project
 - **Todo list templates** use `is_template` flag on `todo_lists`. Clone via `/api/todos/[id]/clone`. Templates are household-scoped.
 - **Item groups** use `group_name` on `todo_items`. UI supports collapsible sections or tabs (persisted in localStorage per list).
 - **Event-linked lists** use `event_id` FK on `todo_lists`. One list per event. Calendar events show linked list progress.
+- **Recipe rotation** is a household-wide `in_rotation` boolean on `recipes` (default true). Out-of-rotation recipes stay in the library and manual meal picker with an "Out of rotation" badge; toggle via `PATCH /api/recipes/[id]` from the detail page or library card.
 - **Packet sizes** live in `packet_sizes` (global rows, `household_id IS NULL`) with optional household overrides. Seeded from `supabase/seed_data/packet_sizes_uk.json` via `supabase/migrations/00017_packet_sizes_seed.sql` (regenerate with `npx tsx scripts/generate-packet-sizes-migration.ts`).
 
 ## Key Files
