@@ -49,3 +49,7 @@ scripts/
 
 # superpowers brainstorm
 .superpowers/
+
+# local Claude Code state (never commit)
+.claude/projects/
+.claude/worktrees/
