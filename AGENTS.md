@@ -144,7 +144,7 @@ Production:    Doppler prd config → production Supabase project
 ## Key Files
 
 - `docs/plans/` — Design docs and implementation plans
-- `supabase/migrations/` — Sequential numbered migrations (00001–00015)
+- `supabase/migrations/` — Sequential numbered migrations (`NNNNN_name.sql`; take the next number after the highest present)
 - `src/components/features/` — Feature components organized by domain
 - `src/lib/utils/member-colors.ts` — Deterministic member color assignment
 - `src/lib/ai/extract-recipe.ts` — Claude API recipe extraction
